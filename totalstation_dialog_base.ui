@@ -1,0 +1,749 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>TotalopenstationDialogBase</class>
+ <widget class="QDialog" name="TotalopenstationDialogBase">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>725</width>
+    <height>850</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>TotalOpenStatio To Qgis</string>
+  </property>
+  <property name="windowIcon">
+   <iconset resource="resources.qrc">
+    <normaloff>:/plugins/totalopenstationToQgis/icon.png</normaloff>:/plugins/totalopenstationToQgis/icon.png</iconset>
+  </property>
+  <layout class="QGridLayout" name="gridLayout">
+   <item row="2" column="1">
+    <widget class="QPushButton" name="pushButton_export">
+     <property name="maximumSize">
+      <size>
+       <width>100</width>
+       <height>16777215</height>
+      </size>
+     </property>
+     <property name="text">
+      <string>Process</string>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="0" colspan="2">
+    <widget class="QTabWidget" name="tabWidget">
+     <property name="currentIndex">
+      <number>0</number>
+     </property>
+     <widget class="QWidget" name="Connection">
+      <attribute name="icon">
+       <iconset resource="resources.qrc">
+        <normaloff>:/plugins/totalopenstationToQgis/icon.png</normaloff>:/plugins/totalopenstationToQgis/icon.png</iconset>
+      </attribute>
+      <attribute name="title">
+       <string>Connection</string>
+      </attribute>
+      <layout class="QGridLayout" name="gridLayout_2">
+       <item row="2" column="0">
+        <widget class="QLabel" name="label_8">
+         <property name="text">
+          <string>Save Raw</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="0">
+        <widget class="QLabel" name="label_2">
+         <property name="text">
+          <string>Model</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="2">
+        <widget class="QComboBox" name="comboBox_port">
+         <property name="editable">
+          <bool>true</bool>
+         </property>
+         <property name="currentText">
+          <string/>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="2">
+        <widget class="QgsDockWidget" name="mDockWidget">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="floating">
+          <bool>false</bool>
+         </property>
+         <property name="features">
+          <set>QDockWidget::NoDockWidgetFeatures</set>
+         </property>
+         <widget class="QWidget" name="dockWidgetContents">
+          <widget class="QLabel" name="label_3">
+           <property name="geometry">
+            <rect>
+             <x>20</x>
+             <y>20</y>
+             <width>61</width>
+             <height>16</height>
+            </rect>
+           </property>
+           <property name="text">
+            <string>Baudrate</string>
+           </property>
+          </widget>
+          <widget class="QComboBox" name="comboBox_2">
+           <property name="geometry">
+            <rect>
+             <x>110</x>
+             <y>20</y>
+             <width>151</width>
+             <height>22</height>
+            </rect>
+           </property>
+           <property name="editable">
+            <bool>true</bool>
+           </property>
+           <item>
+            <property name="text">
+             <string>9600</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>1200</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>2400</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>4800</string>
+            </property>
+           </item>
+          </widget>
+          <widget class="QLabel" name="label_4">
+           <property name="geometry">
+            <rect>
+             <x>20</x>
+             <y>50</y>
+             <width>61</width>
+             <height>16</height>
+            </rect>
+           </property>
+           <property name="text">
+            <string>Bytesize</string>
+           </property>
+          </widget>
+          <widget class="QComboBox" name="comboBox_3">
+           <property name="geometry">
+            <rect>
+             <x>110</x>
+             <y>50</y>
+             <width>151</width>
+             <height>22</height>
+            </rect>
+           </property>
+           <property name="editable">
+            <bool>true</bool>
+           </property>
+           <item>
+            <property name="text">
+             <string>8</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>7</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>6</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>5</string>
+            </property>
+           </item>
+          </widget>
+          <widget class="QLabel" name="label_5">
+           <property name="geometry">
+            <rect>
+             <x>280</x>
+             <y>20</y>
+             <width>81</width>
+             <height>16</height>
+            </rect>
+           </property>
+           <property name="text">
+            <string>ParitySetting</string>
+           </property>
+          </widget>
+          <widget class="QComboBox" name="comboBox_4">
+           <property name="geometry">
+            <rect>
+             <x>370</x>
+             <y>20</y>
+             <width>151</width>
+             <height>22</height>
+            </rect>
+           </property>
+           <property name="editable">
+            <bool>true</bool>
+           </property>
+           <item>
+            <property name="text">
+             <string>N</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>E</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>O</string>
+            </property>
+           </item>
+          </widget>
+          <widget class="QLabel" name="label_6">
+           <property name="geometry">
+            <rect>
+             <x>20</x>
+             <y>110</y>
+             <width>191</width>
+             <height>16</height>
+            </rect>
+           </property>
+           <property name="text">
+            <string>Time lipse between data packet</string>
+           </property>
+          </widget>
+          <widget class="QLabel" name="label_7">
+           <property name="geometry">
+            <rect>
+             <x>280</x>
+             <y>50</y>
+             <width>81</width>
+             <height>16</height>
+            </rect>
+           </property>
+           <property name="text">
+            <string>Stop Bit</string>
+           </property>
+          </widget>
+          <widget class="QComboBox" name="comboBox_6">
+           <property name="geometry">
+            <rect>
+             <x>370</x>
+             <y>50</y>
+             <width>151</width>
+             <height>22</height>
+            </rect>
+           </property>
+           <property name="editable">
+            <bool>true</bool>
+           </property>
+           <item>
+            <property name="text">
+             <string>1</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>2</string>
+            </property>
+           </item>
+          </widget>
+          <widget class="QLineEdit" name="lineEdit">
+           <property name="geometry">
+            <rect>
+             <x>210</x>
+             <y>110</y>
+             <width>113</width>
+             <height>20</height>
+            </rect>
+           </property>
+           <property name="text">
+            <string>1.0</string>
+           </property>
+          </widget>
+         </widget>
+        </widget>
+       </item>
+       <item row="0" column="0">
+        <widget class="QLabel" name="label">
+         <property name="text">
+          <string>Port</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="2">
+        <widget class="QComboBox" name="comboBox_model">
+         <item>
+          <property name="text">
+           <string>leica_tcr_1205</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>leica_tcr_705</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>nikon_npl_350</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>trimble</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>zeiss_elta_r55</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>topcon_gpt_3005</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>custom</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>sokkia_rku_630</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>custom_bluetooth</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>geomax</string>
+          </property>
+         </item>
+        </widget>
+       </item>
+       <item row="2" column="2">
+        <widget class="QLineEdit" name="lineEdit_save_raw"/>
+       </item>
+       <item row="2" column="3">
+        <widget class="QToolButton" name="toolButton_save_raw">
+         <property name="text">
+          <string>...</string>
+         </property>
+        </widget>
+       </item>
+       <item row="5" column="0">
+        <widget class="QPushButton" name="pushButton_connect">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>63</width>
+           <height>16777215</height>
+          </size>
+         </property>
+         <property name="text">
+          <string>Connect</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="3">
+        <widget class="QPushButton" name="pushButton_check_port">
+         <property name="text">
+          <string>check port</string>
+         </property>
+        </widget>
+       </item>
+       <item row="4" column="0" colspan="4">
+        <widget class="QPlainTextEdit" name="textEdit">
+         <property name="tabChangesFocus">
+          <bool>true</bool>
+         </property>
+         <property name="lineWrapMode">
+          <enum>QPlainTextEdit::WidgetWidth</enum>
+         </property>
+         <property name="readOnly">
+          <bool>true</bool>
+         </property>
+         <property name="overwriteMode">
+          <bool>true</bool>
+         </property>
+         <property name="backgroundVisible">
+          <bool>true</bool>
+         </property>
+         <property name="centerOnScroll">
+          <bool>true</bool>
+         </property>
+         <property name="placeholderText">
+          <string>Welcome! turn on your device</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="ProcessData">
+      <attribute name="title">
+       <string>ProcessData</string>
+      </attribute>
+      <layout class="QGridLayout" name="gridLayout_3">
+       <item row="1" column="1">
+        <widget class="QLineEdit" name="lineEdit_input"/>
+       </item>
+       <item row="3" column="1">
+        <widget class="QLineEdit" name="lineEdit_output"/>
+       </item>
+       <item row="2" column="1">
+        <widget class="QComboBox" name="comboBox_format2">
+         <item>
+          <property name="text">
+           <string>geojson</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>dxf</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>csv pyarchinit_us</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>csv pyarchinit_rif</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>csv pyarchinit_sample</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>csv</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>txt</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>dat</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>sql</string>
+          </property>
+         </item>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <widget class="QComboBox" name="comboBox_format">
+         <item>
+          <property name="text">
+           <string>geomax_gsi</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>geomax_txt</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>leica_gsi</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>leica_tcr_1205</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>leica_tcr_705</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>topcon_gts</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>topcon_ascii</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>topcon_gt7</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>sokkia_sdr33</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>trimble_dc</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>trimble_are</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>nikon_raw_v200</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>zeiss_r5</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>zeiss_rec_500</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>landxml</string>
+          </property>
+         </item>
+        </widget>
+       </item>
+       <item row="1" column="2">
+        <widget class="QToolButton" name="toolButton_input">
+         <property name="text">
+          <string>...</string>
+         </property>
+        </widget>
+       </item>
+       <item row="3" column="2">
+        <widget class="QToolButton" name="toolButton_output">
+         <property name="text">
+          <string>...</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="0">
+        <widget class="QLabel" name="label_9">
+         <property name="text">
+          <string>Format input</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="0">
+        <widget class="QLabel" name="label_10">
+         <property name="text">
+          <string>Format output</string>
+         </property>
+        </widget>
+       </item>
+       <item row="4" column="0" colspan="3">
+        <widget class="QTableView" name="tableView">
+         <property name="alternatingRowColors">
+          <bool>true</bool>
+         </property>
+         <property name="gridStyle">
+          <enum>Qt::DashDotDotLine</enum>
+         </property>
+         <property name="sortingEnabled">
+          <bool>true</bool>
+         </property>
+         <attribute name="horizontalHeaderStretchLastSection">
+          <bool>true</bool>
+         </attribute>
+         <attribute name="verticalHeaderCascadingSectionResizes">
+          <bool>true</bool>
+         </attribute>
+         <attribute name="verticalHeaderShowSortIndicator" stdset="0">
+          <bool>true</bool>
+         </attribute>
+         <attribute name="verticalHeaderStretchLastSection">
+          <bool>true</bool>
+         </attribute>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </widget>
+   </item>
+   <item row="2" column="0">
+    <widget class="QProgressBar" name="progressBar">
+     <property name="value">
+      <number>0</number>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="1">
+    <widget class="QCheckBox" name="checkBox_coord">
+     <property name="enabled">
+      <bool>true</bool>
+     </property>
+     <property name="text">
+      <string>CheckBox coord</string>
+     </property>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>QgsDockWidget</class>
+   <extends>QDockWidget</extends>
+   <header>qgsdockwidget.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
+ <resources>
+  <include location="resources.qrc"/>
+ </resources>
+ <connections>
+  <connection>
+   <sender>lineEdit_output</sender>
+   <signal>textChanged(QString)</signal>
+   <receiver>tableView</receiver>
+   <slot>selectAll()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>109</x>
+     <y>164</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>102</x>
+     <y>277</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>lineEdit_save_raw</sender>
+   <signal>textEdited(QString)</signal>
+   <receiver>lineEdit_save_raw</receiver>
+   <slot>setText(QString)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>509</x>
+     <y>114</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>602</x>
+     <y>114</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>TotalopenstationDialogBase</sender>
+   <signal>rejected()</signal>
+   <receiver>textEdit</receiver>
+   <slot>clear()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>646</x>
+     <y>5</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>573</x>
+     <y>494</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>TotalopenstationDialogBase</sender>
+   <signal>rejected()</signal>
+   <receiver>lineEdit_save_raw</receiver>
+   <slot>clear()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>471</x>
+     <y>2</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>457</x>
+     <y>114</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>TotalopenstationDialogBase</sender>
+   <signal>rejected()</signal>
+   <receiver>lineEdit_input</receiver>
+   <slot>clear()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>337</x>
+     <y>2</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>315</x>
+     <y>92</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>TotalopenstationDialogBase</sender>
+   <signal>rejected()</signal>
+   <receiver>lineEdit_output</receiver>
+   <slot>clear()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>493</x>
+     <y>2</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>487</x>
+     <y>155</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>TotalopenstationDialogBase</sender>
+   <signal>rejected()</signal>
+   <receiver>tableView</receiver>
+   <slot>reset()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>389</x>
+     <y>3</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>381</x>
+     <y>289</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+</ui>

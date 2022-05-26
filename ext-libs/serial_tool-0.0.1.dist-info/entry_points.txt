@@ -1,0 +1,3 @@
+[console_scripts]
+serial-tool = serial_tool.serial:main
+

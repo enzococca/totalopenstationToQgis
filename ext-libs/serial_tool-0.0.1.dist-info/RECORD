@@ -1,0 +1,13 @@
+../../Scripts/serial-tool.exe,sha256=LZ1ckWHbHh090OrtUZWQeleinRMlWtnYFNxUWHzS3KI,106368
+serial_tool-0.0.1.dist-info/INSTALLER,sha256=zuuue4knoyJ-UwPPXg8fezS7VCrXJQrAP7zeNuwvFQg,4
+serial_tool-0.0.1.dist-info/LICENCE,sha256=6kbiFSfobTZ7beWiKnHpN902HgBx-Jzgcme0SvKqhKY,1091
+serial_tool-0.0.1.dist-info/METADATA,sha256=tS7A3Y9j4e0a2RTBjXtBp3RyTwJeWR4DF6jvFuoH6Tw,729
+serial_tool-0.0.1.dist-info/RECORD,,
+serial_tool-0.0.1.dist-info/REQUESTED,sha256=47DEQpj8HBSa-_TImW-5JCeuQeRkm5NMpJWZG3hSuFU,0
+serial_tool-0.0.1.dist-info/WHEEL,sha256=YUYzQ6UQdoqxXjimOitTqynltBCkwY6qlTfTh2IzqQU,97
+serial_tool-0.0.1.dist-info/entry_points.txt,sha256=GBS0y6MRuFIg5TVPMH4ZMlPDKwcl55YZizAXB_v18MA,57
+serial_tool-0.0.1.dist-info/top_level.txt,sha256=aDocHE3vOpwDv62iHqhYszLSQck0s1i7OZ-wM__4gE4,12
+serial_tool/__init__.py,sha256=47DEQpj8HBSa-_TImW-5JCeuQeRkm5NMpJWZG3hSuFU,0
+serial_tool/__pycache__/__init__.cpython-38.pyc,,
+serial_tool/__pycache__/serial.cpython-38.pyc,,
+serial_tool/serial.py,sha256=nCJxkI2kVfBJu2OWNav75UxzRdDATzVK539W7L2p9y0,960
