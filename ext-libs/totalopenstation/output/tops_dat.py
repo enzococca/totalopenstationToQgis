@@ -23,7 +23,7 @@ from . import Builder
 
 
 def to_dat(point):
-    result = "{p.id} {p.id} {p.geometry.x} {p.geometry.y}\r\n".format(p=point)
+    result = "{p.id} {p.geometry.x} {p.geometry.y}  {p.geometry.z}\r\n".format(p=point)
     return result
 
 
