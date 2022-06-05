@@ -38,8 +38,8 @@ from qgis.PyQt.QtSql import *
 from qgis.PyQt import  QtWidgets
 from qgis.core import  *
 from qgis.gui import  *
-#from qgis.utils import iface
-FORM_CLASS, _ = loadUiType(os.path.join(os.path.dirname(__file__),'totalstation_dialog_base.ui'))
+from qgis.utils import iface
+FORM_CLASS, _ = uic.loadUi(os.path.join(os.path.dirname(__file__),'totalstation_dialog_base.ui'))
 class TotalopenstationDialog(QDialog, FORM_CLASS):
 
 
@@ -47,8 +47,8 @@ class TotalopenstationDialog(QDialog, FORM_CLASS):
         """Constructor."""
         super(TotalopenstationDialog, self).__init__(parent)
         self.setupUi(self)
-        #self.iface = iface
-        #self.canvas = iface.mapCanvas()
+        self.iface = iface
+        self.canvas = iface.mapCanvas()
 
         self.model = QtGui.QStandardItemModel(self)
         self.tableView.setModel(self.model)
