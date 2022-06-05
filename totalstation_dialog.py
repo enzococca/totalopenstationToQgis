@@ -39,7 +39,7 @@ from qgis.PyQt import  QtWidgets
 from qgis.core import  *
 from qgis.gui import  *
 from qgis.utils import iface
-FORM_CLASS, _ = uic.loadUi(os.path.join(os.path.dirname(__file__),'totalstation_dialog_base.ui'),self)
+#FORM_CLASS, _ = uic.loadUi(os.path.join(os.path.dirname(__file__),'totalstation_dialog_base.ui'),self)
 class TotalopenstationDialog(QtWidgets.QDialog):
 
 
