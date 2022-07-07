@@ -39,7 +39,11 @@ from qgis.PyQt import  QtWidgets
 from qgis.core import  *
 from qgis.gui import  *
 from qgis.utils import iface
+
+
 FORM_CLASS, _ = loadUiType(os.path.join(os.path.dirname(__file__),'totalstation_dialog_base.ui'))
+
+
 class TotalopenstationDialog(QDialog, FORM_CLASS):
 
 
@@ -502,12 +506,27 @@ class TotalopenstationDialog(QDialog, FORM_CLASS):
 
                     self.loadCsv(str(self.lineEdit_output.text()))
 
+                # elif self.comboBox_format2.currentIndex()== 6 or:
+                    # uri = "file:///"+str(self.lineEdit_output.text())+"?type=txt&xField=x&yField=y&spatialIndex=no&subsetIndex=no&watchFile=no"
+                    # layer1 = QgsVectorLayer(uri, 'totalopenstation', "delimitedtext")
+
+                    # #layer.isValid()
+
+
+                    # QgsProject.instance().addMapLayer(layer1)
+
+                    # QMessageBox.warning(self, 'Total Open Station',
+                                              # 'data loaded into panel Layer', QMessageBox.Ok)
+
+
+                    # self.loadCsv(str(self.lineEdit_output.text()))
 
 
 
                 else:
 
-                    pass
+                    QMessageBox.warning(self, 'Total Open Station',
+                                          "Questo formato non verrà importato in QGIS ma solamente salvato", QMessageBox.Ok)
 
             except Exception as e:
 
