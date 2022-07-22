@@ -24,7 +24,7 @@
 
 
 
-from qgis.PyQt.QtCore import QSettings, QTranslator, QCoreApplication
+from qgis.PyQt.QtCore import Qt,QSettings, QTranslator, QCoreApplication
 from qgis.PyQt.QtGui import QIcon
 from qgis.PyQt.QtWidgets import QAction
 
@@ -68,7 +68,14 @@ class Totalopenstation:
 
         # Check if plugin was started the first time in current QGIS session
         # Must be set in initGui() to survive plugin reloads
-        self.first_start = None
+        # TODO: We are going to let the user set this up in a future iteration
+        self.toolbar = self.iface.addToolBar(u'&Total Open Station To Qgis')
+        self.toolbar.setObjectName(u'&Total Open Station To Qgis')
+
+        # print "** INITIALIZING TOPS"
+
+        self.pluginIsActive = False
+        self.dockwidget = None
 
     # noinspection PyMethodMayBeStatic
     def tr(self, message):
@@ -171,9 +178,23 @@ class Totalopenstation:
             parent=self.iface.mainWindow())
 
         # will be set False in run()
-        self.first_start = True
+        #self.first_start = True
 
+    def onClosePlugin(self):
+        """Cleanup necessary items here when plugin dockwidget is closed"""
 
+        # print "** CLOSING TOPS"
+
+        # disconnects
+        self.dockwidget.closingPlugin.disconnect(self.onClosePlugin)
+
+        # remove this statement if dockwidget is to remain
+        # for reuse if plugin is reopened
+        # Commented next statement since it causes QGIS crashe
+        # when closing the docked window:
+        # self.dockwidget = None
+
+        self.pluginIsActive = False
     def unload(self):
         """Removes the plugin menu item and icon from QGIS GUI."""
         for action in self.actions:
@@ -181,23 +202,26 @@ class Totalopenstation:
                 self.tr(u'&Total Open Station '),
                 action)
             self.iface.removeToolBarIcon(action)
-
+        del self.toolbar
 
     def run(self):
-        """Run method that performs all the real work"""
+        if not self.pluginIsActive:
+            self.pluginIsActive = True
 
-        # Create the dialog with elements (after translation) and keep reference
-        # Only create GUI ONCE in callback, so that it will only load when the plugin is started
-        if self.first_start == True:
-            self.first_start = False
-            self.dlg = TotalopenstationDialog()
+            #print "** STARTING TOPS"
 
-        # show the dialog
-        self.dlg.show()
-        # Run the dialog event loop
-        result = self.dlg.exec_()
-        # See if OK was pressed
-        if result:
-            # Do something useful here - delete the line containing pass and
-            # substitute with your code.
-            pass
+            # dockwidget may not exist if:
+            #    first run of plugin
+            #    removed on close (see self.onClosePlugin method)
+            if self.dockwidget == None:
+                # Create the dockwidget (after translation) and keep reference
+                self.dockwidget = TotalopenstationDialog()
+
+            # connect to provide cleanup on closing of dockwidget
+            self.dockwidget.closingPlugin.connect(self.onClosePlugin)
+
+            # show the dockwidget
+            # TODO: fix to allow choice of dock location
+            self.iface.addDockWidget(Qt.RightDockWidgetArea, self.dockwidget)
+            self.dockwidget.show()
+

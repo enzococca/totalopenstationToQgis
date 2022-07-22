@@ -29,7 +29,6 @@ import platform
 import csv
 import tempfile
 import textwrap as tr
-from qgis.PyQt.uic import loadUiType
 from qgis.PyQt import *
 from qgis.PyQt.QtGui import *
 from qgis.PyQt.QtCore import  *
@@ -41,12 +40,11 @@ from qgis.gui import  *
 from qgis.utils import iface
 from pathlib import Path
 
-FORM_CLASS, _ = loadUiType(os.path.join(os.path.dirname(__file__),'totalstation_dialog_base.ui'))
+FORM_CLASS, _ = uic.loadUiType(os.path.join(os.path.dirname(__file__),'totalstation_dialog_base.ui'))
 
 
-class TotalopenstationDialog(QDialog, FORM_CLASS):
-
-
+class TotalopenstationDialog(QtWidgets.QDockWidget, FORM_CLASS):
+    closingPlugin = pyqtSignal()
     def __init__(self, parent=None):
         """Constructor."""
         super(TotalopenstationDialog, self).__init__(parent)
@@ -64,6 +62,10 @@ class TotalopenstationDialog(QDialog, FORM_CLASS):
         self.lineEdit_save_raw.textChanged.connect(self.connect)
         self.pushButton_connect.setEnabled(False)
         #self.check_layer()
+
+    def closeEvent(self, event):
+        self.closingPlugin.emit()
+        event.accept()
     def connect(self):
 
 
@@ -216,17 +218,8 @@ class TotalopenstationDialog(QDialog, FORM_CLASS):
                 else:
                     layer2 = QgsVectorLayer(shp_l, 'TOPS-first_job', "ogr")
 
-                if  len(QgsProject.instance().mapLayersByName('TOPS-second_job')) != 0:
 
-                    layer2 = QgsVectorLayer(shp_l, 'TOPS-tirth_job', "ogr")
-                else:
-                    layer2 = QgsVectorLayer(shp_l, 'TOPS-second_job', "ogr")
 
-                if  len(QgsProject.instance().mapLayersByName('TOPS-third_job')) != 0:
-
-                    layer2 = QgsVectorLayer(shp_l, 'TOPS-fourth_job', "ogr")
-                else:
-                    layer2 = QgsVectorLayer(shp_l, 'TOPS-third_job', "ogr")
 
                 QgsProject.instance().addMapLayer(layer2)
 
@@ -906,6 +899,10 @@ class TotalopenstationDialog(QDialog, FORM_CLASS):
             self.pushButton_rt.setHidden(False)
 
     def on_pushButton_rt_pressed(self):
+        QMessageBox.information(self, 'TotalopenStation',
+                                'Select the Point where you want translate and than the origin point of your poligonal from the first job in tha map canvas')
+
+
 
         #self.check_layer()
         # attivo il layer che voglio traslare
@@ -918,68 +915,82 @@ class TotalopenstationDialog(QDialog, FORM_CLASS):
         a.startEditing()
 
         # seleziono il punto dalla poligonale su cui devo traslare
-        selection = b.selectedFeatures()[0]
+        #QMessageBox.information(self, 'TotalopeStation', 'Select the Point where you want translate from the first job in tha map canvas')
+        try:
+            selection = b.selectedFeatures()[0]
 
-        # estraggo le coordinate x y
-        pt = QgsPointXY(selection['x'], selection['y'])
+            # estraggo le coordinate x y
+            pt = QgsPointXY(selection['x'], selection['y'])
+            print(pt)
+            selection_or = b.selectedFeatures()[1]
+            pt2 = QgsPointXY(selection_or['x'], selection_or['y'])
+            print(pt2)
+            if bool(pt) and bool(pt2):
+                # preparo il context
+                context = QgsExpressionContext()
+                scope = QgsExpressionContextScope()
+                context.appendScope(scope)
 
-        # preparo il context
-        context = QgsExpressionContext()
-        scope = QgsExpressionContextScope()
-        context.appendScope(scope)
+                # espressione per traslare sul punto selezionato della poligonale
+                e1 = QgsExpression('translate($geometry,{},{})'.format(pt[0], pt[1]))
 
-        # espressione per traslare sul punto selezionato della poligonale
-        e1 = QgsExpression('translate($geometry,{},{})'.format(pt[0], pt[1]))
+                # devi selezionare  il punto d'origine della poligonale
+                #QMessageBox.information(self, 'TotalopeStation','Select origin Point of first job, inthe map canvas')
 
-        # espressione per calcolare l'azimut in gradi sulla linea al punto di origine
-        e2 = QgsExpression('degrees(azimuth(make_point({},{}), make_point(0.0,0.0)))'.format(pt[0], pt[1]))
 
-        print(e2)
+                # espressione per calcolare l'azimut in gradi sulla linea al punto di origine
+                e2 = QgsExpression('degrees(azimuth(make_point({},{}), make_point({},{})))'.format(pt[0], pt[1],pt2[0],pt2[1]))
 
-        r = e2.evaluate(context)
-        print(r)
+                print(e2)
 
-        # espressione per ruotare
-        e3 = QgsExpression('rotate( $geometry, {}, make_point({},{}))'.format(r, pt[0], pt[1]))
-        print(e3)
+                r = e2.evaluate(context)
+                print(r)
 
-        # espressione per aggiornare i campi x y del vettore ruotato
-        e4 = QgsExpression('$x')
-        e5 = QgsExpression('$y')
+                # espressione per ruotare
+                e3 = QgsExpression('rotate( $geometry, {}, make_point({},{}))'.format(r, pt[0], pt[1]))
+                print(e3)
 
-        print(e4)
+                # espressione per aggiornare i campi x y del vettore ruotato
+                e4 = QgsExpression('$x')
+                e5 = QgsExpression('$y')
 
-        # ciclo for per aggiornare le geometrie con l'espressione di traslazione
-        for f in a.getFeatures():
-            QCoreApplication.processEvents()
-            scope.setFeature(f)
-            d = e1.evaluate(context)
-            print(d)
-            f.setGeometry(d)
-            a.updateFeature(f)
+                print(e4)
 
-        # ciclo for per aggiornare le geometrie con l'espressione di rotazione
-        for s in a.getFeatures():
-            QCoreApplication.processEvents()
-            scope.setFeature(s)
-            d = e3.evaluate(context)
-            print(d)
-            s.setGeometry(d)
-            a.updateFeature(s)
+                # ciclo for per aggiornare le geometrie con l'espressione di traslazione
+                for f in a.getFeatures():
+                    QCoreApplication.processEvents()
+                    scope.setFeature(f)
+                    d = e1.evaluate(context)
+                    print(d)
+                    f.setGeometry(d)
+                    a.updateFeature(f)
 
-            # aggiorno i campi x y della tabella ruotata
-        for g in a.getFeatures():
-            QCoreApplication.processEvents()
-            scope.setFeature(g)
-            d1 = g['x'] = e4.evaluate(context)
-            d2 = g['y'] = e5.evaluate(context)
-            print(d1, d2)
-            # s.setGeometry(d)
-            a.updateFeature(g)
+                # ciclo for per aggiornare le geometrie con l'espressione di rotazione
+                for s in a.getFeatures():
+                    QCoreApplication.processEvents()
+                    scope.setFeature(s)
+                    d = e3.evaluate(context)
+                    print(d)
+                    s.setGeometry(d)
+                    a.updateFeature(s)
 
-            # salvo e chiudo
-        a.commitChanges()
+                    # aggiorno i campi x y della tabella ruotata
+                for g in a.getFeatures():
+                    QCoreApplication.processEvents()
+                    scope.setFeature(g)
+                    d1 = g['x'] = e4.evaluate(context)
+                    d2 = g['y'] = e5.evaluate(context)
+                    print(d1, d2)
+                    # s.setGeometry(d)
+                    a.updateFeature(g)
 
+                    # salvo e chiudo
+                a.commitChanges()
+            else:
+                QMessageBox.information(self, 'TotalopenStation',
+                                        "devi selezionare il punto su cui traslare e il punto d'origine della poligonale")
+        except:
+            pass
     def on_pushButton_connect_pressed(self):
         self.textEdit.clear()
 

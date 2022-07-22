@@ -26,12 +26,9 @@
 
 # noinspection PyPep8Naming
 import os
-from os import path
+
 import re
-import subprocess
-import sys
-import traceback
-import platform
+
 from qgis.core import QgsMessageLog, Qgis, QgsSettings
 L=QgsSettings().value("locale/userLocale")[0:2]
 missing_libraries = []
