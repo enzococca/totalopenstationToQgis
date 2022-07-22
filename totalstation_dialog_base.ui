@@ -18,20 +18,24 @@
     <normaloff>:/plugins/totalopenstationToQgis/icon.png</normaloff>:/plugins/totalopenstationToQgis/icon.png</iconset>
   </property>
   <layout class="QGridLayout" name="gridLayout">
-   <item row="2" column="1">
-    <widget class="QPushButton" name="pushButton_export">
-     <property name="maximumSize">
-      <size>
-       <width>100</width>
-       <height>16777215</height>
-      </size>
-     </property>
-     <property name="text">
-      <string>Process</string>
+   <item row="2" column="0">
+    <widget class="QProgressBar" name="progressBar">
+     <property name="value">
+      <number>0</number>
      </property>
     </widget>
    </item>
-   <item row="0" column="0" colspan="2">
+   <item row="1" column="1">
+    <widget class="QCheckBox" name="checkBox_coord">
+     <property name="enabled">
+      <bool>true</bool>
+     </property>
+     <property name="text">
+      <string>CheckBox coord</string>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="0" colspan="3">
     <widget class="QTabWidget" name="tabWidget">
      <property name="currentIndex">
       <number>0</number>
@@ -411,14 +415,18 @@
        <string>ProcessData</string>
       </attribute>
       <layout class="QGridLayout" name="gridLayout_3">
-       <item row="1" column="1">
-        <widget class="QLineEdit" name="lineEdit_input"/>
-       </item>
-       <item row="3" column="1">
-        <widget class="QLineEdit" name="lineEdit_output"/>
+       <item row="2" column="0">
+        <widget class="QLabel" name="label_10">
+         <property name="text">
+          <string>Format output</string>
+         </property>
+        </widget>
        </item>
        <item row="2" column="1">
         <widget class="QComboBox" name="comboBox_format2">
+         <property name="currentIndex">
+          <number>6</number>
+         </property>
          <item>
           <property name="text">
            <string>geojson</string>
@@ -451,6 +459,11 @@
          </item>
          <item>
           <property name="text">
+           <string>shp</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
            <string>txt</string>
           </property>
          </item>
@@ -464,6 +477,48 @@
            <string>sql</string>
           </property>
          </item>
+        </widget>
+       </item>
+       <item row="3" column="1">
+        <widget class="QLineEdit" name="lineEdit_output"/>
+       </item>
+       <item row="5" column="0" colspan="3">
+        <widget class="QTableView" name="tableView">
+         <property name="alternatingRowColors">
+          <bool>true</bool>
+         </property>
+         <property name="gridStyle">
+          <enum>Qt::DashDotDotLine</enum>
+         </property>
+         <property name="sortingEnabled">
+          <bool>true</bool>
+         </property>
+         <attribute name="horizontalHeaderStretchLastSection">
+          <bool>true</bool>
+         </attribute>
+         <attribute name="verticalHeaderCascadingSectionResizes">
+          <bool>true</bool>
+         </attribute>
+         <attribute name="verticalHeaderShowSortIndicator" stdset="0">
+          <bool>true</bool>
+         </attribute>
+         <attribute name="verticalHeaderStretchLastSection">
+          <bool>true</bool>
+         </attribute>
+        </widget>
+       </item>
+       <item row="1" column="2">
+        <widget class="QToolButton" name="toolButton_input">
+         <property name="text">
+          <string>...</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="0">
+        <widget class="QLabel" name="label_9">
+         <property name="text">
+          <string>Format input</string>
+         </property>
         </widget>
        </item>
        <item row="0" column="1">
@@ -545,12 +600,8 @@
          </item>
         </widget>
        </item>
-       <item row="1" column="2">
-        <widget class="QToolButton" name="toolButton_input">
-         <property name="text">
-          <string>...</string>
-         </property>
-        </widget>
+       <item row="1" column="1">
+        <widget class="QLineEdit" name="lineEdit_input"/>
        </item>
        <item row="3" column="2">
         <widget class="QToolButton" name="toolButton_output">
@@ -559,63 +610,27 @@
          </property>
         </widget>
        </item>
-       <item row="0" column="0">
-        <widget class="QLabel" name="label_9">
+       <item row="4" column="1">
+        <widget class="QPushButton" name="pushButton_export">
+         <property name="maximumSize">
+          <size>
+           <width>100</width>
+           <height>16777215</height>
+          </size>
+         </property>
          <property name="text">
-          <string>Format input</string>
+          <string>Load</string>
          </property>
-        </widget>
-       </item>
-       <item row="2" column="0">
-        <widget class="QLabel" name="label_10">
-         <property name="text">
-          <string>Format output</string>
-         </property>
-        </widget>
-       </item>
-       <item row="4" column="0" colspan="3">
-        <widget class="QTableView" name="tableView">
-         <property name="alternatingRowColors">
-          <bool>true</bool>
-         </property>
-         <property name="gridStyle">
-          <enum>Qt::DashDotDotLine</enum>
-         </property>
-         <property name="sortingEnabled">
-          <bool>true</bool>
-         </property>
-         <attribute name="horizontalHeaderStretchLastSection">
-          <bool>true</bool>
-         </attribute>
-         <attribute name="verticalHeaderCascadingSectionResizes">
-          <bool>true</bool>
-         </attribute>
-         <attribute name="verticalHeaderShowSortIndicator" stdset="0">
-          <bool>true</bool>
-         </attribute>
-         <attribute name="verticalHeaderStretchLastSection">
-          <bool>true</bool>
-         </attribute>
         </widget>
        </item>
       </layout>
      </widget>
     </widget>
    </item>
-   <item row="2" column="0">
-    <widget class="QProgressBar" name="progressBar">
-     <property name="value">
-      <number>0</number>
-     </property>
-    </widget>
-   </item>
-   <item row="1" column="1">
-    <widget class="QCheckBox" name="checkBox_coord">
-     <property name="enabled">
-      <bool>true</bool>
-     </property>
+   <item row="2" column="1">
+    <widget class="QPushButton" name="pushButton_rt">
      <property name="text">
-      <string>CheckBox coord</string>
+      <string>Rototranslation</string>
      </property>
     </widget>
    </item>
