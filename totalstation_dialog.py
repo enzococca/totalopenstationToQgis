@@ -51,7 +51,7 @@ class TotalopenstationDialog(QtWidgets.QDockWidget, FORM_CLASS):
         self.setupUi(self)
         #self.iface = iface
         #self.canvas = iface.mapCanvas()
-
+        self.groupBox_coordinate.setHidden(True)
         self.model = QtGui.QStandardItemModel(self)
         self.tableView.setModel(self.model)
         self.toolButton_input.clicked.connect(self.setPathinput)
