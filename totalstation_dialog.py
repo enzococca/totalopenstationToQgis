@@ -29,14 +29,11 @@ import platform
 import csv
 import tempfile
 import textwrap as tr
-from qgis.PyQt import *
-from qgis.PyQt.QtGui import *
-from qgis.PyQt.QtCore import  *
-from qgis.PyQt.QtWidgets import QVBoxLayout, QApplication, QDialog, QMessageBox, QFileDialog,QLineEdit,QWidget,QCheckBox,QProgressBar,QInputDialog
-from qgis.PyQt.QtSql import *
+
+from qgis.PyQt.QtWidgets import  QVBoxLayout, QApplication, QDialog, QMessageBox, QFileDialog,QLineEdit,QWidget,QCheckBox,QProgressBar,QInputDialog
 
 from qgis.core import  *
-from qgis.gui import  *
+
 from qgis.utils import iface
 from pathlib import Path
 
