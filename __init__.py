@@ -66,10 +66,7 @@ for l in missing_libraries:
     p = re.findall(r"'(.*?)'", l)
     install_libraries.append(p[0])
 
-install_libraries = []
-for l in missing_libraries:
-    p = re.findall(r"'(.*?)'", l)
-    install_libraries.append(p[0])
+
 
 if install_libraries:
     '''legge le librerie mancanti dalla cartella ext-libs'''

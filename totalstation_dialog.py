@@ -29,11 +29,14 @@ import platform
 import csv
 import tempfile
 import textwrap as tr
-
-from qgis.PyQt.QtWidgets import  QVBoxLayout, QApplication, QDialog, QMessageBox, QFileDialog,QLineEdit,QWidget,QCheckBox,QProgressBar,QInputDialog
+from qgis.PyQt import *
+from qgis.PyQt.QtGui import *
+from qgis.PyQt.QtCore import  *
+from qgis.PyQt.QtWidgets import QVBoxLayout, QApplication, QDialog, QMessageBox, QFileDialog,QLineEdit,QWidget,QCheckBox,QProgressBar,QInputDialog
+from qgis.PyQt.QtSql import *
 
 from qgis.core import  *
-
+from qgis.gui import  *
 from qgis.utils import iface
 from pathlib import Path
 
@@ -188,22 +191,22 @@ class TotalopenstationDialog(QtWidgets.QDockWidget, FORM_CLASS):
 
                 cmd = os.path.join(os.sep, b, 'python', 'plugins', 'totalopenstationToQgis', 'scripts',
                                    'totalopenstation-cli-parser.py')
-
+                direct = os.path.dirname(os.path.abspath(str(self.lineEdit_output.text())))
+                filename = Path(self.lineEdit_output.text()).stem
+                shp_csv = direct + '/' + filename + '.csv'
                 p = subprocess.check_call(
-                    ['python', cmd, '-i', str(self.lineEdit_input.text()), '-o', str(self.lineEdit_output.text()),
+                    ['python', cmd, '-i', str(self.lineEdit_input.text()), '-o', shp_csv,
                      '-f', self.comboBox_format.currentText(), '-t', 'csv',
                      '--overwrite'], shell=True)
 
 
 
-                direct = os.path.dirname(os.path.abspath(str(self.lineEdit_output.text())))
 
-                uri = "file:///" + str(
-                    self.lineEdit_output.text()) + "?type=csv&xField=x&yField=y&spatialIndex=no&subsetIndex=no&watchFile=no"
+                uri = "file:///"+ shp_csv + "?type=csv&xField=x&yField=y&spatialIndex=no&subsetIndex=no&watchFile=no"
                 layer1 = QgsVectorLayer(uri, 'totalopenstation', "delimitedtext")
                 
-                filename=Path(self.lineEdit_output.text()).stem
-                shp_l = direct + '/' + filename+'_.shp'
+
+                shp_l = direct + '/' + filename+'.shp'
                 QgsVectorFileWriter.writeAsVectorFormat(layer1,
                                                         shp_l,
                                                         "UTF-8", layer1.crs(), "ESRI Shapefile",
@@ -223,7 +226,7 @@ class TotalopenstationDialog(QtWidgets.QDockWidget, FORM_CLASS):
                 QMessageBox.warning(self, 'Total Open Station',
                                     'data loaded into panel Layer', QMessageBox.Ok)
 
-                self.loadCsv(str(self.lineEdit_output.text()))
+                self.loadCsv(shp_csv)
             else:
                 cmd = os.path.join(os.sep, b, 'python', 'plugins', 'totalopenstationToQgis', 'scripts', 'totalopenstation-cli-parser.py')
                 #cmd2= ' -i '+str(self.lineEdit_input.text())+' '+'-o '+str(self.lineEdit_output.text())+' '+'-f'+' '+self.comboBox_format.currentText()+' '+'-t'+'csv'+'--overwrite'
