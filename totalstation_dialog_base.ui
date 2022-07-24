@@ -18,7 +18,7 @@
     <item row="0" column="0">
      <widget class="QTabWidget" name="tabWidget">
       <property name="currentIndex">
-       <number>0</number>
+       <number>1</number>
       </property>
       <widget class="QWidget" name="Connection">
        <attribute name="icon">
@@ -337,6 +337,70 @@
         <string>ProcessData</string>
        </attribute>
        <layout class="QGridLayout" name="gridLayout_6">
+        <item row="6" column="0">
+         <widget class="QPushButton" name="pushButton_rt">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>105</width>
+            <height>16777215</height>
+           </size>
+          </property>
+          <property name="text">
+           <string>Rototranslation</string>
+          </property>
+         </widget>
+        </item>
+        <item row="3" column="0">
+         <widget class="QCheckBox" name="checkBox_ref">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="text">
+           <string>Insert references</string>
+          </property>
+         </widget>
+        </item>
+        <item row="2" column="0">
+         <widget class="QTableView" name="tableView">
+          <property name="alternatingRowColors">
+           <bool>true</bool>
+          </property>
+          <property name="gridStyle">
+           <enum>Qt::DashDotDotLine</enum>
+          </property>
+          <property name="sortingEnabled">
+           <bool>true</bool>
+          </property>
+          <attribute name="horizontalHeaderStretchLastSection">
+           <bool>true</bool>
+          </attribute>
+          <attribute name="verticalHeaderCascadingSectionResizes">
+           <bool>true</bool>
+          </attribute>
+          <attribute name="verticalHeaderShowSortIndicator" stdset="0">
+           <bool>true</bool>
+          </attribute>
+          <attribute name="verticalHeaderStretchLastSection">
+           <bool>true</bool>
+          </attribute>
+         </widget>
+        </item>
+        <item row="4" column="0">
+         <widget class="QCheckBox" name="checkBox_coord">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="text">
+           <string>CheckBox coord</string>
+          </property>
+         </widget>
+        </item>
         <item row="0" column="0">
          <layout class="QGridLayout" name="gridLayout_4">
           <item row="0" column="0">
@@ -532,57 +596,29 @@
          </layout>
         </item>
         <item row="1" column="0">
-         <widget class="QTableView" name="tableView">
-          <property name="alternatingRowColors">
-           <bool>true</bool>
-          </property>
-          <property name="gridStyle">
-           <enum>Qt::DashDotDotLine</enum>
-          </property>
-          <property name="sortingEnabled">
-           <bool>true</bool>
-          </property>
-          <attribute name="horizontalHeaderStretchLastSection">
-           <bool>true</bool>
-          </attribute>
-          <attribute name="verticalHeaderCascadingSectionResizes">
-           <bool>true</bool>
-          </attribute>
-          <attribute name="verticalHeaderShowSortIndicator" stdset="0">
-           <bool>true</bool>
-          </attribute>
-          <attribute name="verticalHeaderStretchLastSection">
-           <bool>true</bool>
-          </attribute>
-         </widget>
-        </item>
-        <item row="2" column="0">
-         <widget class="QCheckBox" name="checkBox_ref">
-          <property name="enabled">
-           <bool>false</bool>
-          </property>
-          <property name="text">
-           <string>Insert references manually</string>
-          </property>
-         </widget>
-        </item>
-        <item row="3" column="0">
-         <widget class="QCheckBox" name="checkBox_coord">
-          <property name="enabled">
-           <bool>false</bool>
-          </property>
-          <property name="text">
-           <string>CheckBox coord</string>
-          </property>
-         </widget>
-        </item>
-        <item row="4" column="0">
          <widget class="QGroupBox" name="groupBox_coordinate">
           <property name="title">
            <string>Coordinates</string>
           </property>
           <layout class="QGridLayout" name="gridLayout_3">
-           <item row="0" column="0">
+           <item row="1" column="2">
+            <widget class="QPushButton" name="pushButton_destination">
+             <property name="text">
+              <string>insert destination</string>
+             </property>
+             <property name="checkable">
+              <bool>false</bool>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="2">
+            <widget class="QPushButton" name="pushButton_origin">
+             <property name="text">
+              <string>insert origin</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="0" rowspan="2">
             <layout class="QGridLayout" name="gridLayout">
              <item row="0" column="0">
               <widget class="QLabel" name="label_11">
@@ -592,7 +628,7 @@
               </widget>
              </item>
              <item row="0" column="1">
-              <widget class="QLineEdit" name="lineEdit_xorigin"/>
+              <widget class="QLineEdit" name="lineEdit_x_origin"/>
              </item>
              <item row="1" column="0">
               <widget class="QLabel" name="label_12">
@@ -602,7 +638,7 @@
               </widget>
              </item>
              <item row="1" column="1">
-              <widget class="QLineEdit" name="lineEdit_yorigin"/>
+              <widget class="QLineEdit" name="lineEdit_y_origin"/>
              </item>
              <item row="2" column="0">
               <widget class="QLabel" name="label_13">
@@ -612,7 +648,7 @@
               </widget>
              </item>
              <item row="2" column="1">
-              <widget class="QLineEdit" name="lineEdit_x_dest"/>
+              <widget class="QLineEdit" name="lineEdit_x_destination"/>
              </item>
              <item row="3" column="0">
               <widget class="QLabel" name="label_14">
@@ -622,30 +658,11 @@
               </widget>
              </item>
              <item row="3" column="1">
-              <widget class="QLineEdit" name="lineEdit_ydest"/>
+              <widget class="QLineEdit" name="lineEdit_y_destination"/>
              </item>
             </layout>
            </item>
           </layout>
-         </widget>
-        </item>
-        <item row="5" column="0">
-         <widget class="QPushButton" name="pushButton_rt">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="maximumSize">
-           <size>
-            <width>105</width>
-            <height>16777215</height>
-           </size>
-          </property>
-          <property name="text">
-           <string>Rototranslation</string>
-          </property>
          </widget>
         </item>
        </layout>
@@ -666,22 +683,5 @@
  <resources>
   <include location="resources.qrc"/>
  </resources>
- <connections>
-  <connection>
-   <sender>checkBox_ref</sender>
-   <signal>toggled(bool)</signal>
-   <receiver>groupBox_coordinate</receiver>
-   <slot>setVisible(bool)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>145</x>
-     <y>672</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>162</x>
-     <y>688</y>
-    </hint>
-   </hints>
-  </connection>
- </connections>
+ <connections/>
 </ui>
