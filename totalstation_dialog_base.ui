@@ -18,7 +18,7 @@
     <item row="0" column="0">
      <widget class="QTabWidget" name="tabWidget">
       <property name="currentIndex">
-       <number>1</number>
+       <number>0</number>
       </property>
       <widget class="QWidget" name="Connection">
        <attribute name="icon">
@@ -337,33 +337,74 @@
         <string>ProcessData</string>
        </attribute>
        <layout class="QGridLayout" name="gridLayout_6">
-        <item row="6" column="0">
-         <widget class="QPushButton" name="pushButton_rt">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
+        <item row="1" column="0">
+         <widget class="QGroupBox" name="groupBox_coordinate">
+          <property name="title">
+           <string>Coordinates</string>
           </property>
-          <property name="maximumSize">
-           <size>
-            <width>105</width>
-            <height>16777215</height>
-           </size>
-          </property>
-          <property name="text">
-           <string>Rototranslation</string>
-          </property>
-         </widget>
-        </item>
-        <item row="3" column="0">
-         <widget class="QCheckBox" name="checkBox_ref">
-          <property name="enabled">
-           <bool>false</bool>
-          </property>
-          <property name="text">
-           <string>Insert references</string>
-          </property>
+          <layout class="QGridLayout" name="gridLayout_3">
+           <item row="1" column="2">
+            <widget class="QPushButton" name="pushButton_destination">
+             <property name="text">
+              <string>insert destination</string>
+             </property>
+             <property name="checkable">
+              <bool>false</bool>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="2">
+            <widget class="QPushButton" name="pushButton_origin">
+             <property name="text">
+              <string>insert origin</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="0" rowspan="2">
+            <layout class="QGridLayout" name="gridLayout">
+             <item row="0" column="0">
+              <widget class="QLabel" name="label_11">
+               <property name="text">
+                <string>x origin</string>
+               </property>
+              </widget>
+             </item>
+             <item row="0" column="1">
+              <widget class="QLineEdit" name="lineEdit_x_origin"/>
+             </item>
+             <item row="1" column="0">
+              <widget class="QLabel" name="label_12">
+               <property name="text">
+                <string>y origin</string>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="1">
+              <widget class="QLineEdit" name="lineEdit_y_origin"/>
+             </item>
+             <item row="2" column="0">
+              <widget class="QLabel" name="label_13">
+               <property name="text">
+                <string>x destination</string>
+               </property>
+              </widget>
+             </item>
+             <item row="2" column="1">
+              <widget class="QLineEdit" name="lineEdit_x_destination"/>
+             </item>
+             <item row="3" column="0">
+              <widget class="QLabel" name="label_14">
+               <property name="text">
+                <string>y destination</string>
+               </property>
+              </widget>
+             </item>
+             <item row="3" column="1">
+              <widget class="QLineEdit" name="lineEdit_y_destination"/>
+             </item>
+            </layout>
+           </item>
+          </layout>
          </widget>
         </item>
         <item row="2" column="0">
@@ -391,23 +432,133 @@
           </attribute>
          </widget>
         </item>
-        <item row="4" column="0">
-         <widget class="QCheckBox" name="checkBox_coord">
-          <property name="enabled">
-           <bool>false</bool>
+        <item row="8" column="0">
+         <widget class="QPushButton" name="pushButton_rt">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="maximumSize">
+           <size>
+            <width>105</width>
+            <height>16777215</height>
+           </size>
           </property>
           <property name="text">
-           <string>CheckBox coord</string>
+           <string>Rototranslation</string>
           </property>
          </widget>
         </item>
         <item row="0" column="0">
          <layout class="QGridLayout" name="gridLayout_4">
+          <item row="1" column="2">
+           <widget class="QToolButton" name="toolButton_input">
+            <property name="text">
+             <string>...</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QLineEdit" name="lineEdit_input"/>
+          </item>
+          <item row="2" column="0">
+           <widget class="QLabel" name="label_10">
+            <property name="text">
+             <string>Format output</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="2">
+           <widget class="QToolButton" name="toolButton_output">
+            <property name="text">
+             <string>...</string>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="2">
+           <widget class="QPushButton" name="pushButton_export">
+            <property name="maximumSize">
+             <size>
+              <width>100</width>
+              <height>16777215</height>
+             </size>
+            </property>
+            <property name="text">
+             <string>Load</string>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="1">
+           <widget class="QProgressBar" name="progressBar">
+            <property name="value">
+             <number>0</number>
+            </property>
+           </widget>
+          </item>
           <item row="0" column="0">
            <widget class="QLabel" name="label_9">
             <property name="text">
              <string>Format input</string>
             </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="QComboBox" name="comboBox_format2">
+            <property name="currentIndex">
+             <number>6</number>
+            </property>
+            <item>
+             <property name="text">
+              <string>geojson</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>dxf</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>csv pyarchinit_us</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>csv pyarchinit_rif</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>csv pyarchinit_sample</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>csv</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>shp</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>txt</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>dat</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>sql</string>
+             </property>
+            </item>
            </widget>
           </item>
           <item row="0" column="1">
@@ -489,180 +640,48 @@
             </item>
            </widget>
           </item>
-          <item row="1" column="1">
-           <widget class="QLineEdit" name="lineEdit_input"/>
-          </item>
-          <item row="1" column="2">
-           <widget class="QToolButton" name="toolButton_input">
-            <property name="text">
-             <string>...</string>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="0">
-           <widget class="QLabel" name="label_10">
-            <property name="text">
-             <string>Format output</string>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="1">
-           <widget class="QComboBox" name="comboBox_format2">
-            <property name="currentIndex">
-             <number>6</number>
-            </property>
-            <item>
-             <property name="text">
-              <string>geojson</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>dxf</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>csv pyarchinit_us</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>csv pyarchinit_rif</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>csv pyarchinit_sample</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>csv</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>shp</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>txt</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>dat</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>sql</string>
-             </property>
-            </item>
-           </widget>
-          </item>
           <item row="3" column="1">
            <widget class="QLineEdit" name="lineEdit_output"/>
           </item>
-          <item row="3" column="2">
-           <widget class="QToolButton" name="toolButton_output">
-            <property name="text">
-             <string>...</string>
+          <item row="5" column="2">
+           <widget class="QPushButton" name="pushButton_crs">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
             </property>
-           </widget>
-          </item>
-          <item row="4" column="1">
-           <widget class="QProgressBar" name="progressBar">
-            <property name="value">
-             <number>0</number>
-            </property>
-           </widget>
-          </item>
-          <item row="4" column="2">
-           <widget class="QPushButton" name="pushButton_export">
             <property name="maximumSize">
              <size>
-              <width>100</width>
+              <width>105</width>
               <height>16777215</height>
              </size>
             </property>
             <property name="text">
-             <string>Load</string>
+             <string>set CRS to UCS</string>
             </property>
            </widget>
           </item>
          </layout>
         </item>
-        <item row="1" column="0">
-         <widget class="QGroupBox" name="groupBox_coordinate">
-          <property name="title">
-           <string>Coordinates</string>
+        <item row="3" column="0">
+         <widget class="QCheckBox" name="checkBox_ref">
+          <property name="enabled">
+           <bool>false</bool>
           </property>
-          <layout class="QGridLayout" name="gridLayout_3">
-           <item row="1" column="2">
-            <widget class="QPushButton" name="pushButton_destination">
-             <property name="text">
-              <string>insert destination</string>
-             </property>
-             <property name="checkable">
-              <bool>false</bool>
-             </property>
-            </widget>
-           </item>
-           <item row="0" column="2">
-            <widget class="QPushButton" name="pushButton_origin">
-             <property name="text">
-              <string>insert origin</string>
-             </property>
-            </widget>
-           </item>
-           <item row="0" column="0" rowspan="2">
-            <layout class="QGridLayout" name="gridLayout">
-             <item row="0" column="0">
-              <widget class="QLabel" name="label_11">
-               <property name="text">
-                <string>x origin</string>
-               </property>
-              </widget>
-             </item>
-             <item row="0" column="1">
-              <widget class="QLineEdit" name="lineEdit_x_origin"/>
-             </item>
-             <item row="1" column="0">
-              <widget class="QLabel" name="label_12">
-               <property name="text">
-                <string>y origin</string>
-               </property>
-              </widget>
-             </item>
-             <item row="1" column="1">
-              <widget class="QLineEdit" name="lineEdit_y_origin"/>
-             </item>
-             <item row="2" column="0">
-              <widget class="QLabel" name="label_13">
-               <property name="text">
-                <string>x destination</string>
-               </property>
-              </widget>
-             </item>
-             <item row="2" column="1">
-              <widget class="QLineEdit" name="lineEdit_x_destination"/>
-             </item>
-             <item row="3" column="0">
-              <widget class="QLabel" name="label_14">
-               <property name="text">
-                <string>y destination</string>
-               </property>
-              </widget>
-             </item>
-             <item row="3" column="1">
-              <widget class="QLineEdit" name="lineEdit_y_destination"/>
-             </item>
-            </layout>
-           </item>
-          </layout>
+          <property name="text">
+           <string>Insert references</string>
+          </property>
+         </widget>
+        </item>
+        <item row="4" column="0">
+         <widget class="QCheckBox" name="checkBox_coord">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="text">
+           <string>CheckBox coord</string>
+          </property>
          </widget>
         </item>
        </layout>

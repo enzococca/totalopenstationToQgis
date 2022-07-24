@@ -900,7 +900,7 @@ class TotalopenstationDialog(QtWidgets.QDockWidget, FORM_CLASS):
 
 
     def selection_point(self):
-        # self.check_layer()
+        #self.check_layer()
         try:# attivo il layer che voglio traslare
 
 
@@ -938,19 +938,35 @@ class TotalopenstationDialog(QtWidgets.QDockWidget, FORM_CLASS):
         self.lineEdit_x_origin.text()
         self.lineEdit_y_origin.setText(str(pt2[1]))
         self.lineEdit_y_origin.text()
+
+    def on_pushButton_crs_pressed(self):
+        if QgsCoordinateReferenceSystem().fromProj4("+proj=tmerc +ellps=WGS84 +datum=WGS84 +units=m +no_defs +lon_0=0 +x_0=0 +y_0=0 +k_0=0.996").isValid()==False:
+            crs = QgsCoordinateReferenceSystem()
+            #if crs.toProj4()=="+proj=tmerc +ellps=WGS84 +datum=WGS84 +units=m +no_defs +lon_0=0 +x_0=0 +y_0=0 +k_0=0.996":
+            #crs.createFromSrsId(100000)
+            crs.createFromProj4("+proj=tmerc +ellps=WGS84 +datum=WGS84 +units=m +no_defs +lon_0=0 +x_0=0 +y_0=0 +k_0=0.996")
+            crs.saveAsUserCrs("UCS")
+            QgsProject.instance().setCrs(crs)
+        else:
+            crs = QgsCoordinateReferenceSystem().fromProj4("+proj=tmerc +ellps=WGS84 +datum=WGS84 +units=m +no_defs +lon_0=0 +x_0=0 +y_0=0 +k_0=0.996")
+            QgsProject.instance().setCrs(crs)
+
     def on_pushButton_rt_pressed(self):
         QMessageBox.information(self, 'TotalopenStation',
                                 'Select the Point where you want translate and than the origin point of your poligonal from the first job in tha map canvas')
 
-
         #self.selection_point()
         #self.check_layer()
         # attivo il layer che voglio traslare
+        crs = QgsCoordinateReferenceSystem().fromProj4(
+            "+proj=tmerc +ellps=WGS84 +datum=WGS84 +units=m +no_defs +lon_0=0 +x_0=0 +y_0=0 +k_0=0.996")
+
+
         a = QgsProject.instance().mapLayersByName('TOPS-second_job')[0]
-
-        # layer su cui scegliere ilpunto per traslare
+        a.setCrs(crs)
+        # layer su cui scegliere il punto per traslare
         b = QgsProject.instance().mapLayersByName('TOPS-first_job')[0]
-
+        b.setCrs(crs)
         # avvio editing
 
 
