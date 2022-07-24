@@ -50,8 +50,8 @@ class TotalopenstationDialog(QtWidgets.QDockWidget, FORM_CLASS):
         super(TotalopenstationDialog, self).__init__(parent)
         self.setupUi(self)
         #self.iface = iface
-        self.canvas = iface.mapCanvas()
-        self.groupBox_coordinate.setHidden(False)
+        #self.canvas = iface.mapCanvas()
+        self.groupBox_coordinate.setHidden(True)
         self.model = QtGui.QStandardItemModel(self)
         self.tableView.setModel(self.model)
         self.toolButton_input.clicked.connect(self.setPathinput)
@@ -61,8 +61,8 @@ class TotalopenstationDialog(QtWidgets.QDockWidget, FORM_CLASS):
         self.comboBox_model.currentIndexChanged.connect(self.tt)
         self.lineEdit_save_raw.textChanged.connect(self.connect)
         self.pushButton_connect.setEnabled(False)
-        self.pushButton_destination.clicked.connect(self.selection_point)
-        self.pushButton_origin.clicked.connect(self.selection_origin)
+        #self.check_layer()
+
     def closeEvent(self, event):
         self.closingPlugin.emit()
         event.accept()
@@ -898,52 +898,12 @@ class TotalopenstationDialog(QtWidgets.QDockWidget, FORM_CLASS):
                                 QMessageBox.Ok)
             self.pushButton_rt.setHidden(False)
 
-
-    def selection_point(self):
-        # self.check_layer()
-        try:# attivo il layer che voglio traslare
-
-
-            # layer su cui scegliere ilpunto per traslare
-            b = QgsProject.instance().mapLayersByName('TOPS-first_job')[0]
-
-            # avvio editing
-            #a.startEditing()
-
-            # seleziono il punto dalla poligonale su cui devo traslare
-            # QMessageBox.information(self, 'TotalopeStation', 'Select the Point where you want translate from the first job in tha map canvas')
-
-            selection = b.selectedFeatures()
-
-
-            # estraggo le coordinate x y
-            pt = QgsPointXY(selection[0]['x'], selection[0]['y'])
-            print(pt)
-            self.lineEdit_x_destination.setText(str(pt[0]))
-            self.lineEdit_x_destination.text()
-            self.lineEdit_y_destination.setText(str(pt[1]))
-            self.lineEdit_y_destination.text()
-
-
-
-        except Exception as e:
-            QMessageBox.information(self, 'TotalopenStation',str(e))
-
-    def selection_origin(self):
-        b = QgsProject.instance().mapLayersByName('TOPS-first_job')[0]
-        selection_or = b.selectedFeatures()
-        pt2 = QgsPointXY(selection_or[0]['x'], selection_or[0]['y'])
-        print(pt2)
-        self.lineEdit_x_origin.setText(str(pt2[0]))
-        self.lineEdit_x_origin.text()
-        self.lineEdit_y_origin.setText(str(pt2[1]))
-        self.lineEdit_y_origin.text()
     def on_pushButton_rt_pressed(self):
         QMessageBox.information(self, 'TotalopenStation',
                                 'Select the Point where you want translate and than the origin point of your poligonal from the first job in tha map canvas')
 
 
-        #self.selection_point()
+
         #self.check_layer()
         # attivo il layer che voglio traslare
         a = QgsProject.instance().mapLayersByName('TOPS-second_job')[0]
@@ -952,36 +912,34 @@ class TotalopenstationDialog(QtWidgets.QDockWidget, FORM_CLASS):
         b = QgsProject.instance().mapLayersByName('TOPS-first_job')[0]
 
         # avvio editing
-
-
-
         a.startEditing()
-        ptx = self.lineEdit_x_destination.text()
 
-        pty = self.lineEdit_y_destination.text()
-
-
-        pt2x = self.lineEdit_x_origin.text()
-
-        pt2y = self.lineEdit_y_origin.text()
         # seleziono il punto dalla poligonale su cui devo traslare
         #QMessageBox.information(self, 'TotalopeStation', 'Select the Point where you want translate from the first job in tha map canvas')
         try:
+            selection = b.selectedFeatures()[0]
 
+            # estraggo le coordinate x y
+            pt = QgsPointXY(selection['x'], selection['y'])
+            print(pt)
+            selection_or = b.selectedFeatures()[1]
+            pt2 = QgsPointXY(selection_or['x'], selection_or['y'])
+            print(pt2)
+            if bool(pt) and bool(pt2):
                 # preparo il context
                 context = QgsExpressionContext()
                 scope = QgsExpressionContextScope()
                 context.appendScope(scope)
 
                 # espressione per traslare sul punto selezionato della poligonale
-                e1 = QgsExpression('translate($geometry,{},{})'.format(ptx, pty))
+                e1 = QgsExpression('translate($geometry,{},{})'.format(pt[0], pt[1]))
 
                 # devi selezionare  il punto d'origine della poligonale
                 #QMessageBox.information(self, 'TotalopeStation','Select origin Point of first job, inthe map canvas')
 
 
                 # espressione per calcolare l'azimut in gradi sulla linea al punto di origine
-                e2 = QgsExpression('degrees(azimuth(make_point({},{}), make_point({},{})))'.format(ptx, pty,pt2x,pt2y))
+                e2 = QgsExpression('degrees(azimuth(make_point({},{}), make_point({},{})))'.format(pt[0], pt[1],pt2[0],pt2[1]))
 
                 print(e2)
 
@@ -989,7 +947,7 @@ class TotalopenstationDialog(QtWidgets.QDockWidget, FORM_CLASS):
                 print(r)
 
                 # espressione per ruotare
-                e3 = QgsExpression('rotate( $geometry, {}, make_point({},{}))'.format(r, ptx, pty))
+                e3 = QgsExpression('rotate( $geometry, {}, make_point({},{}))'.format(r, pt[0], pt[1]))
                 print(e3)
 
                 # espressione per aggiornare i campi x y del vettore ruotato
@@ -1028,7 +986,9 @@ class TotalopenstationDialog(QtWidgets.QDockWidget, FORM_CLASS):
 
                     # salvo e chiudo
                 a.commitChanges()
-
+            else:
+                QMessageBox.information(self, 'TotalopenStation',
+                                        "devi selezionare il punto su cui traslare e il punto d'origine della poligonale")
         except:
             pass
     def on_pushButton_connect_pressed(self):
