@@ -1042,10 +1042,24 @@ class TotalopenstationDialog(QtWidgets.QDockWidget, FORM_CLASS):
                     # s.setGeometry(d)
                     a.updateFeature(g)
 
-                    # salvo e chiudo
-                a.commitChanges()
+                self.canvas.refresh()
+                value=QMessageBox.information(self,'TotalOpenStation', 'rototranslation completed, click ok to commit change else cancel '
+                                                               'to rollback', QMessageBox.Ok|QMessageBox.Cancel)    # salvo e chiudo
+                if value == QMessageBox.Ok:
+                    a.commitChanges()
+                elif value == QMessageBox.Cancel:
+                    #a.actionRollbackEdits().trigger()
+                    iface.actionRollbackEdits().trigger()
+                    a.commitChanges()
+                    self.canvas.refresh()
 
         except:
+            pass
+
+    def launch_commit(self, msg):
+        if msg == QMessageBox.Ok:
+            self.on_pushButton_export_matrix_pressed()
+        else:
             pass
     def on_pushButton_connect_pressed(self):
         self.textEdit.clear()
