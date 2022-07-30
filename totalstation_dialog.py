@@ -49,7 +49,7 @@ class TotalopenstationDialog(QtWidgets.QDockWidget, FORM_CLASS):
         """Constructor."""
         super(TotalopenstationDialog, self).__init__(parent)
         self.setupUi(self)
-        #self.iface = iface
+        self.iface = iface
         self.canvas = iface.mapCanvas()
         self.groupBox_coordinate.setHidden(False)
         self.model = QtGui.QStandardItemModel(self)

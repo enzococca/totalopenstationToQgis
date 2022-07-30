@@ -1,5 +1,5 @@
 <RCC>
-    <qresource prefix="/plugins/totalopenstationToQgis" >
+    <qresource prefix="/plugins/totalstation" >
         <file>icon.png</file>
     </qresource>
 </RCC>

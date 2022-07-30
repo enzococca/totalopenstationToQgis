@@ -170,7 +170,7 @@ class Totalopenstation:
     def initGui(self):
         """Create the menu entries and toolbar icons inside the QGIS GUI."""
 
-        icon_path = ':/plugins/totalopenstationToQgis/icon.png'
+        icon_path = ':/plugins/totalstation/icon.png'
         self.add_action(
             icon_path,
             text=self.tr(u'Total Open Station '),
