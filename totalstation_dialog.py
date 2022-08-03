@@ -1271,81 +1271,39 @@ class TotalopenstationDialog(QtWidgets.QDockWidget, FORM_CLASS):
             "totalopenstation-cli-connector.py",
         )
 
-        if platform.system() == "Windows":
-            try:
-                c = subprocess.check_call(
-                    [
-                        sys.executable,
-                        cmd,
-                        "-m",
-                        self.comboBox_model.currentText(),
-                        "-p",
-                        self.comboBox_port.currentText(),
-                        "-o",
-                        str(self.lineEdit_save_raw.text()),
-                    ],
-                    shell=True,
-                )
+        try:
+            c = subprocess.check_call(
+                [
+                    sys.executable,
+                    cmd,
+                    "-m",
+                    self.comboBox_model.currentText(),
+                    "-p",
+                    self.comboBox_port.currentText(),
+                    "-o",
+                    str(self.lineEdit_save_raw.text()),
+                ],
+                shell=True,
+            )
 
-            except Exception as e:
-                if self.comboBox_port.currentText() == "":
-                    self.textEdit.appendPlainText("Insert port please!")
+        except Exception as e:
+            if self.comboBox_port.currentText() == "":
+                self.textEdit.appendPlainText("Insert port please!")
 
-                self.textEdit.appendPlainText("Connection falied!")
-
-            else:
-                self.textEdit.appendPlainText("Connection OK.................!\n\n")
-                self.textEdit.appendPlainText(
-                    "Start dowload data.................!\n\n"
-                )
-                # s = io.StringIO()
-                # for i in tqdm(range(3), file=s):
-                # sleep(.1)
-                # self.textEdit.appendPlainText(s.getvalue())
-
-                self.textEdit.appendPlainText("Dowload finished.................!\n\n")
-                self.textEdit.appendPlainText("Result:\n")
-                r = open(str(self.lineEdit_save_raw.text()), "r")
-                lines = r.read().split(",")
-                self.textEdit.appendPlainText(str(lines))
+            self.textEdit.appendPlainText("Connection falied!")
 
         else:
-            # os.system("start cmd /k" + ' python ' +cmd)
-            try:
-                c = subprocess.check_call(
-                    [
-                        sys.executable,
-                        cmd,
-                        "-m",
-                        self.comboBox_model.currentText(),
-                        "-p",
-                        self.comboBox_port.currentText(),
-                        "-o",
-                        str(self.lineEdit_save_raw.text()),
-                    ],
-                    shell=True,
-                )
+            self.textEdit.appendPlainText("Connection OK.................!\n\n")
+            self.textEdit.appendPlainText(
+                "Start dowload data.................!\n\n"
+            )
+            # s = io.StringIO()
+            # for i in tqdm(range(3), file=s):
+            # sleep(.1)
+            # self.textEdit.appendPlainText(s.getvalue())
 
-            except Exception as e:
-                if self.comboBox_port.currentText() == "":
-                    self.textEdit.appendPlainText("Insert port please!")
-
-                self.textEdit.appendPlainText("Connection falied!")
-
-            else:
-                self.textEdit.appendPlainText("Connection OK.................!\n\n\n")
-                self.textEdit.appendPlainText(
-                    "Start dowload data.................!\n\n\n"
-                )
-                # s = io.StringIO()
-                # for i in tqdm(range(3), file=s):
-                # sleep(.1)
-                # self.textEdit.appendPlainTextPlainText(s.getvalue())
-
-                self.textEdit.appendPlainText(
-                    "Dowload finished.................!\n\n\n"
-                )
-                self.textEdit.appendPlainText("Result:\n")
-                r = open(str(self.lineEdit_save_raw.text()), "r")
-                lines = r.read().split(",")
-                self.textEdit.appendPlainText(str(lines))
+            self.textEdit.appendPlainText("Dowload finished.................!\n\n")
+            self.textEdit.appendPlainText("Result:\n")
+            r = open(str(self.lineEdit_save_raw.text()), "r")
+            lines = r.read().split(",")
+            self.textEdit.appendPlainText(str(lines))
