@@ -23,13 +23,13 @@
 """
 
 
-
-from qgis.PyQt.QtCore import Qt,QSettings, QTranslator, QCoreApplication
+from qgis.PyQt.QtCore import Qt, QSettings, QTranslator, QCoreApplication
 from qgis.PyQt.QtGui import QIcon
 from qgis.PyQt.QtWidgets import QAction
 
 # Initialize Qt resources from file resources.py
 from .resources import *
+
 # Import the code for the dialog
 from .totalstation_dialog import TotalopenstationDialog
 import os.path
@@ -51,11 +51,10 @@ class Totalopenstation:
         # initialize plugin directory
         self.plugin_dir = os.path.dirname(__file__)
         # initialize locale
-        locale = QSettings().value('locale/userLocale')[0:2]
+        locale = QSettings().value("locale/userLocale")[0:2]
         locale_path = os.path.join(
-            self.plugin_dir,
-            'i18n',
-            'Totalopenstation_{}.qm'.format(locale))
+            self.plugin_dir, "i18n", "Totalopenstation_{}.qm".format(locale)
+        )
 
         if os.path.exists(locale_path):
             self.translator = QTranslator()
@@ -64,13 +63,13 @@ class Totalopenstation:
 
         # Declare instance attributes
         self.actions = []
-        self.menu = self.tr(u'&Total Open Station To Qgis')
+        self.menu = self.tr("&Total Open Station To Qgis")
 
         # Check if plugin was started the first time in current QGIS session
         # Must be set in initGui() to survive plugin reloads
         # TODO: We are going to let the user set this up in a future iteration
-        self.toolbar = self.iface.addToolBar(u'&Total Open Station To Qgis')
-        self.toolbar.setObjectName(u'&Total Open Station To Qgis')
+        self.toolbar = self.iface.addToolBar("&Total Open Station To Qgis")
+        self.toolbar.setObjectName("&Total Open Station To Qgis")
 
         # print "** INITIALIZING TOPS"
 
@@ -90,8 +89,7 @@ class Totalopenstation:
         :rtype: QString
         """
         # noinspection PyTypeChecker,PyArgumentList,PyCallByClass
-        return QCoreApplication.translate('Totalopenstation', message)
-
+        return QCoreApplication.translate("Totalopenstation", message)
 
     def add_action(
         self,
@@ -103,7 +101,8 @@ class Totalopenstation:
         add_to_toolbar=True,
         status_tip=None,
         whats_this=None,
-        parent=None):
+        parent=None,
+    ):
         """Add a toolbar icon to the toolbar.
 
         :param icon_path: Path to the icon for this action. Can be a resource
@@ -159,9 +158,7 @@ class Totalopenstation:
             self.iface.addToolBarIcon(action)
 
         if add_to_menu:
-            self.iface.addPluginToMenu(
-                self.menu,
-                action)
+            self.iface.addPluginToMenu(self.menu, action)
 
         self.actions.append(action)
 
@@ -170,15 +167,16 @@ class Totalopenstation:
     def initGui(self):
         """Create the menu entries and toolbar icons inside the QGIS GUI."""
 
-        icon_path = ':/plugins/totalstation/icon.png'
+        icon_path = ":/plugins/totalstation/icon.png"
         self.add_action(
             icon_path,
-            text=self.tr(u'Total Open Station '),
+            text=self.tr("Total Open Station "),
             callback=self.run,
-            parent=self.iface.mainWindow())
+            parent=self.iface.mainWindow(),
+        )
 
         # will be set False in run()
-        #self.first_start = True
+        # self.first_start = True
 
     def onClosePlugin(self):
         """Cleanup necessary items here when plugin dockwidget is closed"""
@@ -195,12 +193,11 @@ class Totalopenstation:
         # self.dockwidget = None
 
         self.pluginIsActive = False
+
     def unload(self):
         """Removes the plugin menu item and icon from QGIS GUI."""
         for action in self.actions:
-            self.iface.removePluginMenu(
-                self.tr(u'&Total Open Station '),
-                action)
+            self.iface.removePluginMenu(self.tr("&Total Open Station "), action)
             self.iface.removeToolBarIcon(action)
         del self.toolbar
 
@@ -208,7 +205,7 @@ class Totalopenstation:
         if not self.pluginIsActive:
             self.pluginIsActive = True
 
-            #print "** STARTING TOPS"
+            # print "** STARTING TOPS"
 
             # dockwidget may not exist if:
             #    first run of plugin
@@ -224,4 +221,3 @@ class Totalopenstation:
             # TODO: fix to allow choice of dock location
             self.iface.addDockWidget(Qt.RightDockWidgetArea, self.dockwidget)
             self.dockwidget.show()
-
