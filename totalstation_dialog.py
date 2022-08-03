@@ -22,6 +22,7 @@
 """
 
 import os
+import sys
 from datetime import date
 import pandas as pd
 import subprocess
@@ -151,7 +152,7 @@ class TotalopenstationDialog(QtWidgets.QDockWidget, FORM_CLASS):
 
     def check_port(self):
 
-        p = subprocess.Popen( 'python -m serial.tools.list_ports',stdout=subprocess.PIPE,stderr=subprocess.PIPE,shell=True)
+        p = subprocess.Popen( sys.executable + ' -m serial.tools.list_ports',stdout=subprocess.PIPE,stderr=subprocess.PIPE,shell=True)
 
 
 
@@ -195,7 +196,7 @@ class TotalopenstationDialog(QtWidgets.QDockWidget, FORM_CLASS):
                 filename = Path(self.lineEdit_output.text()).stem
                 shp_csv = direct + '/' + filename + '.csv'
                 p = subprocess.check_call(
-                    ['python', cmd, '-i', str(self.lineEdit_input.text()), '-o', shp_csv,
+                    [sys.executable, cmd, '-i', str(self.lineEdit_input.text()), '-o', shp_csv,
                      '-f', self.comboBox_format.currentText(), '-t', 'csv',
                      '--overwrite'], shell=True)
 
@@ -231,7 +232,7 @@ class TotalopenstationDialog(QtWidgets.QDockWidget, FORM_CLASS):
                 cmd = os.path.join(os.sep, b, 'python', 'plugins', 'totalopenstationToQgis', 'scripts', 'totalopenstation-cli-parser.py')
                 #cmd2= ' -i '+str(self.lineEdit_input.text())+' '+'-o '+str(self.lineEdit_output.text())+' '+'-f'+' '+self.comboBox_format.currentText()+' '+'-t'+'csv'+'--overwrite'
                 try:#os.system("start cmd /k" + ' python ' +cmd+' '+cmd2)
-                    subprocess.check_call(['python',cmd, '-i',str(self.lineEdit_input.text()),'-o',str(self.lineEdit_output.text()),'-f',self.comboBox_format.currentText(),'-t',self.comboBox_format2.currentText(),'--overwrite'], shell=True)
+                    subprocess.check_call([sys.executable,cmd, '-i',str(self.lineEdit_input.text()),'-o',str(self.lineEdit_output.text()),'-f',self.comboBox_format.currentText(),'-t',self.comboBox_format2.currentText(),'--overwrite'], shell=True)
 
                     if self.comboBox_format2.currentIndex()== 0:
 
@@ -576,7 +577,7 @@ class TotalopenstationDialog(QtWidgets.QDockWidget, FORM_CLASS):
         else:
             try:  # os.system("start cmd /k" + ' python ' +cmd+' '+cmd2)
                 p = subprocess.check_call(
-                    ['python', cmd, '-i', str(self.lineEdit_input.text()), '-o', str(self.lineEdit_output.text()), '-f',
+                    [sys.executable, cmd, '-i', str(self.lineEdit_input.text()), '-o', str(self.lineEdit_output.text()), '-f',
                      self.comboBox_format.currentText(), '-t', self.comboBox_format2.currentText(), '--overwrite'],
                     shell=True)
 
@@ -877,7 +878,6 @@ class TotalopenstationDialog(QtWidgets.QDockWidget, FORM_CLASS):
                     pass
 
             except Exception as e:
-
                 QMessageBox.warning(self, 'Total Open Station',
                                     "Error:\n" + str(e), QMessageBox.Ok)
 
@@ -1069,7 +1069,7 @@ class TotalopenstationDialog(QtWidgets.QDockWidget, FORM_CLASS):
             cmd = os.path.join(os.sep, b , 'python', 'plugins', 'totalopenstationToQgis', 'scripts', 'totalopenstation-cli-connector.py')
 
             try:
-                c=subprocess.check_call(['python', cmd,'-m',self.comboBox_model.currentText(),'-p',self.comboBox_port.currentText(),'-o',str(self.lineEdit_save_raw.text())], shell=True)
+                c=subprocess.check_call([sys.executable, cmd,'-m',self.comboBox_model.currentText(),'-p',self.comboBox_port.currentText(),'-o',str(self.lineEdit_save_raw.text())], shell=True)
 
 
 
@@ -1098,7 +1098,7 @@ class TotalopenstationDialog(QtWidgets.QDockWidget, FORM_CLASS):
             cmd = os.path.join(os.sep, b , 'python', 'plugins', 'totalopenstationToQgis', 'scripts', 'totalopenstation-cli-connector.py')
             #os.system("start cmd /k" + ' python ' +cmd)
             try:
-                c=subprocess.check_call(['python', cmd,'-m',self.comboBox_model.currentText(),'-p',self.comboBox_port.currentText(),'-o',str(self.lineEdit_save_raw.text())], shell=True)
+                c=subprocess.check_call([sys.executable, cmd,'-m',self.comboBox_model.currentText(),'-p',self.comboBox_port.currentText(),'-o',str(self.lineEdit_save_raw.text())], shell=True)
 
 
 
