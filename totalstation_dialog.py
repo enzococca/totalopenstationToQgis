@@ -192,20 +192,20 @@ class TotalopenstationDialog(QtWidgets.QDockWidget, FORM_CLASS):
     def on_pushButton_export_pressed(self):
 
         self.delete()
+        b = Path(QgsApplication.qgisSettingsDirPath())
+        cmd = os.path.join(
+            os.sep,
+            b,
+            "python",
+            "plugins",
+            "totalopenstationToQgis",
+            "scripts",
+            "totalopenstation-cli-parser.py",
+        )
+
         if platform.system() == "Windows":
-            b = QgsApplication.qgisSettingsDirPath().replace("/", "\\")
 
             if self.comboBox_format2.currentIndex() == 6:
-
-                cmd = os.path.join(
-                    os.sep,
-                    b,
-                    "python",
-                    "plugins",
-                    "totalopenstationToQgis",
-                    "scripts",
-                    "totalopenstation-cli-parser.py",
-                )
                 direct = os.path.dirname(
                     os.path.abspath(str(self.lineEdit_output.text()))
                 )
@@ -262,15 +262,6 @@ class TotalopenstationDialog(QtWidgets.QDockWidget, FORM_CLASS):
 
                 self.loadCsv(shp_csv)
             else:
-                cmd = os.path.join(
-                    os.sep,
-                    b,
-                    "python",
-                    "plugins",
-                    "totalopenstationToQgis",
-                    "scripts",
-                    "totalopenstation-cli-parser.py",
-                )
                 # cmd2= ' -i '+str(self.lineEdit_input.text())+' '+'-o '+str(self.lineEdit_output.text())+' '+'-f'+' '+self.comboBox_format.currentText()+' '+'-t'+'csv'+'--overwrite'
                 try:  # os.system("start cmd /k" + ' python ' +cmd+' '+cmd2)
                     subprocess.check_call(
@@ -1269,18 +1260,18 @@ class TotalopenstationDialog(QtWidgets.QDockWidget, FORM_CLASS):
     def on_pushButton_connect_pressed(self):
         self.textEdit.clear()
 
-        if platform.system() == "Windows":
-            b = QgsApplication.qgisSettingsDirPath().replace("/", "\\")
-            cmd = os.path.join(
-                os.sep,
-                b,
-                "python",
-                "plugins",
-                "totalopenstationToQgis",
-                "scripts",
-                "totalopenstation-cli-connector.py",
-            )
+        b = Path(QgsApplication.qgisSettingsDirPath())
+        cmd = os.path.join(
+            os.sep,
+            b,
+            "python",
+            "plugins",
+            "totalopenstationToQgis",
+            "scripts",
+            "totalopenstation-cli-connector.py",
+        )
 
+        if platform.system() == "Windows":
             try:
                 c = subprocess.check_call(
                     [
@@ -1319,16 +1310,6 @@ class TotalopenstationDialog(QtWidgets.QDockWidget, FORM_CLASS):
                 self.textEdit.appendPlainText(str(lines))
 
         else:
-            b = QgsApplication.qgisSettingsDirPath()
-            cmd = os.path.join(
-                os.sep,
-                b,
-                "python",
-                "plugins",
-                "totalopenstationToQgis",
-                "scripts",
-                "totalopenstation-cli-connector.py",
-            )
             # os.system("start cmd /k" + ' python ' +cmd)
             try:
                 c = subprocess.check_call(
