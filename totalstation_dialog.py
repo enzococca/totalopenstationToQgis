@@ -211,7 +211,7 @@ class TotalopenstationDialog(QtWidgets.QDockWidget, FORM_CLASS):
                 )
                 filename = Path(self.lineEdit_output.text()).stem
                 shp_csv = direct + "/" + filename + ".csv"
-                p = subprocess.check_call(
+                p = subprocess.run(
                     [
                         sys.executable,
                         cmd,
@@ -225,7 +225,6 @@ class TotalopenstationDialog(QtWidgets.QDockWidget, FORM_CLASS):
                         "csv",
                         "--overwrite",
                     ],
-                    shell=True,
                 )
 
                 uri = (
@@ -264,7 +263,7 @@ class TotalopenstationDialog(QtWidgets.QDockWidget, FORM_CLASS):
             else:
                 # cmd2= ' -i '+str(self.lineEdit_input.text())+' '+'-o '+str(self.lineEdit_output.text())+' '+'-f'+' '+self.comboBox_format.currentText()+' '+'-t'+'csv'+'--overwrite'
                 try:  # os.system("start cmd /k" + ' python ' +cmd+' '+cmd2)
-                    subprocess.check_call(
+                    subprocess.run(
                         [
                             sys.executable,
                             cmd,
@@ -278,7 +277,6 @@ class TotalopenstationDialog(QtWidgets.QDockWidget, FORM_CLASS):
                             self.comboBox_format2.currentText(),
                             "--overwrite",
                         ],
-                        shell=True,
                     )
 
                     if self.comboBox_format2.currentIndex() == 0:
@@ -672,8 +670,7 @@ class TotalopenstationDialog(QtWidgets.QDockWidget, FORM_CLASS):
                     )
         else:
             try:  # os.system("start cmd /k" + ' python ' +cmd+' '+cmd2)
-                p = subprocess.check_call(
-                    [
+                p = subprocess.run([
                         sys.executable,
                         cmd,
                         "-i",
@@ -686,7 +683,6 @@ class TotalopenstationDialog(QtWidgets.QDockWidget, FORM_CLASS):
                         self.comboBox_format2.currentText(),
                         "--overwrite",
                     ],
-                    shell=True,
                 )
 
                 if self.comboBox_format2.currentIndex() == 0:
@@ -1272,7 +1268,7 @@ class TotalopenstationDialog(QtWidgets.QDockWidget, FORM_CLASS):
         )
 
         try:
-            c = subprocess.check_call(
+            c = subprocess.run(
                 [
                     sys.executable,
                     cmd,
@@ -1283,7 +1279,6 @@ class TotalopenstationDialog(QtWidgets.QDockWidget, FORM_CLASS):
                     "-o",
                     str(self.lineEdit_save_raw.text()),
                 ],
-                shell=True,
             )
 
         except Exception as e:
