@@ -22,6 +22,7 @@
 """
 
 import os
+import sys
 from datetime import date
 import pandas as pd
 import subprocess
@@ -31,20 +32,34 @@ import tempfile
 import textwrap as tr
 from qgis.PyQt import *
 from qgis.PyQt.QtGui import *
-from qgis.PyQt.QtCore import  *
-from qgis.PyQt.QtWidgets import QVBoxLayout, QApplication, QDialog, QMessageBox, QFileDialog,QLineEdit,QWidget,QCheckBox,QProgressBar,QInputDialog
+from qgis.PyQt.QtCore import *
+from qgis.PyQt.QtWidgets import (
+    QVBoxLayout,
+    QApplication,
+    QDialog,
+    QMessageBox,
+    QFileDialog,
+    QLineEdit,
+    QWidget,
+    QCheckBox,
+    QProgressBar,
+    QInputDialog,
+)
 from qgis.PyQt.QtSql import *
 
-from qgis.core import  *
-from qgis.gui import  *
+from qgis.core import *
+from qgis.gui import *
 from qgis.utils import iface
 from pathlib import Path
 
-FORM_CLASS, _ = uic.loadUiType(os.path.join(os.path.dirname(__file__),'totalstation_dialog_base.ui'))
+FORM_CLASS, _ = uic.loadUiType(
+    os.path.join(os.path.dirname(__file__), "totalstation_dialog_base.ui")
+)
 
 
 class TotalopenstationDialog(QtWidgets.QDockWidget, FORM_CLASS):
     closingPlugin = pyqtSignal()
+
     def __init__(self, parent=None):
         """Constructor."""
         super(TotalopenstationDialog, self).__init__(parent)
@@ -63,11 +78,26 @@ class TotalopenstationDialog(QtWidgets.QDockWidget, FORM_CLASS):
         self.pushButton_connect.setEnabled(False)
         self.pushButton_destination.clicked.connect(self.selection_point)
         self.pushButton_origin.clicked.connect(self.selection_origin)
+
+    def find_python(self):
+
+        if sys.platform != "win32":
+            return sys.executable
+
+        for path in sys.path:  # searching sys.path for python executables
+            assumed_path = os.path.join(path, "python.exe")
+            if os.path.isfile(assumed_path):
+                return assumed_path
+
+        raise Exception("Python executable not found")
+
+
+
     def closeEvent(self, event):
         self.closingPlugin.emit()
         event.accept()
-    def connect(self):
 
+    def connect(self):
 
         if str(self.lineEdit_save_raw.text()):
 
@@ -76,9 +106,8 @@ class TotalopenstationDialog(QtWidgets.QDockWidget, FORM_CLASS):
         else:
             self.pushButton_connect.setEnabled(False)
 
-
     def tt(self):
-        if self.comboBox_model.currentIndex()!=6:
+        if self.comboBox_model.currentIndex() != 6:
 
             self.mDockWidget.setHidden(True)
         else:
@@ -87,45 +116,35 @@ class TotalopenstationDialog(QtWidgets.QDockWidget, FORM_CLASS):
 
     def setPathinput(self):
         s = QgsSettings()
-        input_ = QFileDialog.getOpenFileName(
-            self,
-            "Set file name",
-            '',
-            "(*.*)"
-        )[0]
-        #filename=dbpath.split("/")[-1]
+        input_ = QFileDialog.getOpenFileName(self, "Set file name", "", "(*.*)")[0]
+        # filename=dbpath.split("/")[-1]
         if input_:
 
             self.lineEdit_input.setText(input_)
-            s.setValue('',input_)
+            s.setValue("", input_)
 
     def setPathoutput(self):
         s = QgsSettings()
         output_ = QFileDialog.getSaveFileName(
             self,
             "Set file name",
-            '',
-            "(*.{})".format(self.comboBox_format2.currentText())
+            "",
+            "(*.{})".format(self.comboBox_format2.currentText()),
         )[0]
-        #filename=dbpath.split("/")[-1]
+        # filename=dbpath.split("/")[-1]
         if output_:
 
             self.lineEdit_output.setText(output_)
-            s.setValue('',output_)
+            s.setValue("", output_)
 
     def setPathsaveraw(self):
         s = QgsSettings()
-        output_ = QFileDialog.getSaveFileName(
-            self,
-            "Set file name",
-            '',
-            "(*.tops)"
-        )[0]
-        #filename=dbpath.split("/")[-1]
+        output_ = QFileDialog.getSaveFileName(self, "Set file name", "", "(*.tops)")[0]
+        # filename=dbpath.split("/")[-1]
         if output_:
 
             self.lineEdit_save_raw.setText(output_)
-            s.setValue('',output_)
+            s.setValue("", output_)
 
     def loadCsv(self, fileName):
         self.tableView.clearSpans()
@@ -133,31 +152,31 @@ class TotalopenstationDialog(QtWidgets.QDockWidget, FORM_CLASS):
         with open(fileName, "r") as fileInput:
             for row in csv.reader(fileInput):
 
-                items = [
-                    QtGui.QStandardItem(field)
-                    for field in row
-                ]
+                items = [QtGui.QStandardItem(field) for field in row]
                 self.model.appendRow(items)
-
-
 
     def delete(self):
         if self.tableView.selectionModel().hasSelection():
-            indexes =[QPersistentModelIndex(index) for index in self.tableView.selectionModel().selectedRows()]
+            indexes = [
+                QPersistentModelIndex(index)
+                for index in self.tableView.selectionModel().selectedRows()
+            ]
             for index in indexes:
-                #print('Deleting row %d...' % index.row())
+                # print('Deleting row %d...' % index.row())
                 self.model.removeRow(index.row())
 
-
     def check_port(self):
-
-        p = subprocess.Popen( 'python -m serial.tools.list_ports',stdout=subprocess.PIPE,stderr=subprocess.PIPE,shell=True)
-
-
+        python_exe = self.find_python()
+        p = subprocess.Popen(
+            python_exe + " -m serial.tools.list_ports",
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            shell=True,
+        )
 
         output, error = p.communicate(str.encode("utf-8"))
-        output = output.decode('utf-8').splitlines()
-        #error= error.decode('utf-8').splitlines()
+        output = output.decode("utf-8").splitlines()
+        # error= error.decode('utf-8').splitlines()
         return output
 
     def listtostr(self):
@@ -168,132 +187,214 @@ class TotalopenstationDialog(QtWidgets.QDockWidget, FORM_CLASS):
         for ele in self.check_port():
             str1 += ele
         return str1
+
     def on_pushButton_check_port_pressed(self):
-        self.textEdit.appendPlainText('Wait a moment....')
+        self.textEdit.appendPlainText("Wait a moment....")
         lines = tr.wrap(str(self.listtostr()), width=10)
-        #self.textEdit.clear()
-        self.textEdit.appendPlainText('Ports found:\n'+str(lines))
+        # self.textEdit.clear()
+        self.textEdit.appendPlainText("Ports found:\n" + str(lines))
         self.comboBox_port.addItems(lines)
+
     def convert_csv(self):
         try:
             df = pd.read_csv(str(self.lineEdit_output.text()))
-            df[['area_q', 'point_name']] = df['point_name'].str.split('-', expand=True)
-            df.to_csv(str(self.lineEdit_output.text()), encoding='utf-8', index=False)
+            df[["area_q", "point_name"]] = df["point_name"].str.split("-", expand=True)
+            df.to_csv(str(self.lineEdit_output.text()), encoding="utf-8", index=False)
         except:
             pass
+
     def on_pushButton_export_pressed(self):
-
+        python_exe = self.find_python()
         self.delete()
+        b = Path(QgsApplication.qgisSettingsDirPath())
+        cmd = os.path.join(
+            os.sep,
+            b,
+            "python",
+            "plugins",
+            "totalopenstationToQgis",
+            "scripts",
+            "totalopenstation-cli-parser.py",
+        )
+
         if platform.system() == "Windows":
-            b=QgsApplication.qgisSettingsDirPath().replace("/","\\")
-
-            if self.comboBox_format2.currentIndex()==6:
-
-                cmd = os.path.join(os.sep, b, 'python', 'plugins', 'totalopenstationToQgis', 'scripts',
-                                   'totalopenstation-cli-parser.py')
-                direct = os.path.dirname(os.path.abspath(str(self.lineEdit_output.text())))
+            b=Path(QgsApplication.qgisSettingsDirPath().replace('/','\\'))
+            cmd = os.path.join(
+                os.sep,
+                b,
+                "python",
+                "plugins",
+                "totalopenstationToQgis",
+                "scripts",
+                "totalopenstation-cli-parser.py",
+            )
+            if self.comboBox_format2.currentIndex() == 6:
+                direct = os.path.dirname(
+                    os.path.abspath(str(self.lineEdit_output.text()))
+                )
                 filename = Path(self.lineEdit_output.text()).stem
-                shp_csv = direct + '/' + filename + '.csv'
-                p = subprocess.check_call(
-                    ['python', cmd, '-i', str(self.lineEdit_input.text()), '-o', shp_csv,
-                     '-f', self.comboBox_format.currentText(), '-t', 'csv',
-                     '--overwrite'], shell=True)
+                shp_csv = direct + "/" + filename + ".csv"
+                p = subprocess.run(
+                    [
+                        python_exe,
+                        cmd,
+                        "-i",
+                        str(self.lineEdit_input.text()),
+                        "-o",
+                        shp_csv,
+                        "-f",
+                        self.comboBox_format.currentText(),
+                        "-t",
+                        "csv",
+                        "--overwrite",
+                    ],
+                )
 
+                uri = (
+                    "file:///"
+                    + shp_csv
+                    + "?type=csv&xField=x&yField=y&spatialIndex=no&subsetIndex=no&watchFile=no"
+                )
+                layer1 = QgsVectorLayer(uri, "totalopenstation", "delimitedtext")
 
+                shp_l = direct + "/" + filename + ".shp"
+                QgsVectorFileWriter.writeAsVectorFormat(
+                    layer1,
+                    shp_l,
+                    "UTF-8",
+                    layer1.crs(),
+                    "ESRI Shapefile",
+                    layerOptions=["SHPT=POINT"],
+                )
 
+                if len(QgsProject.instance().mapLayersByName("TOPS-first_job")) != 0:
 
-                uri = "file:///"+ shp_csv + "?type=csv&xField=x&yField=y&spatialIndex=no&subsetIndex=no&watchFile=no"
-                layer1 = QgsVectorLayer(uri, 'totalopenstation', "delimitedtext")
-                
-
-                shp_l = direct + '/' + filename+'.shp'
-                QgsVectorFileWriter.writeAsVectorFormat(layer1,
-                                                        shp_l,
-                                                        "UTF-8", layer1.crs(), "ESRI Shapefile",
-                                                        layerOptions=['SHPT=POINT'])
-
-                if  len(QgsProject.instance().mapLayersByName('TOPS-first_job')) != 0:
-
-                    layer2 = QgsVectorLayer(shp_l, 'TOPS-second_job', "ogr")
+                    layer2 = QgsVectorLayer(shp_l, "TOPS-second_job", "ogr")
                 else:
-                    layer2 = QgsVectorLayer(shp_l, 'TOPS-first_job', "ogr")
-
-
-
+                    layer2 = QgsVectorLayer(shp_l, "TOPS-first_job", "ogr")
 
                 QgsProject.instance().addMapLayer(layer2)
 
-                QMessageBox.warning(self, 'Total Open Station',
-                                    'data loaded into panel Layer', QMessageBox.Ok)
+                QMessageBox.warning(
+                    self,
+                    "Total Open Station",
+                    "data loaded into panel Layer",
+                    QMessageBox.Ok,
+                )
 
                 self.loadCsv(shp_csv)
             else:
-                cmd = os.path.join(os.sep, b, 'python', 'plugins', 'totalopenstationToQgis', 'scripts', 'totalopenstation-cli-parser.py')
-                #cmd2= ' -i '+str(self.lineEdit_input.text())+' '+'-o '+str(self.lineEdit_output.text())+' '+'-f'+' '+self.comboBox_format.currentText()+' '+'-t'+'csv'+'--overwrite'
-                try:#os.system("start cmd /k" + ' python ' +cmd+' '+cmd2)
-                    subprocess.check_call(['python',cmd, '-i',str(self.lineEdit_input.text()),'-o',str(self.lineEdit_output.text()),'-f',self.comboBox_format.currentText(),'-t',self.comboBox_format2.currentText(),'--overwrite'], shell=True)
+                # cmd2= ' -i '+str(self.lineEdit_input.text())+' '+'-o '+str(self.lineEdit_output.text())+' '+'-f'+' '+self.comboBox_format.currentText()+' '+'-t'+'csv'+'--overwrite'
+                try:  # os.system("start cmd /k" + ' python ' +cmd+' '+cmd2)
+                    subprocess.run(
+                        [
+                            sys.executable,
+                            cmd,
+                            "-i",
+                            str(self.lineEdit_input.text()),
+                            "-o",
+                            str(self.lineEdit_output.text()),
+                            "-f",
+                            self.comboBox_format.currentText(),
+                            "-t",
+                            self.comboBox_format2.currentText(),
+                            "--overwrite",
+                        ],
+                    )
 
-                    if self.comboBox_format2.currentIndex()== 0:
+                    if self.comboBox_format2.currentIndex() == 0:
 
-                        layer = QgsVectorLayer(str(self.lineEdit_output.text()), 'totalopenstation', 'ogr')
+                        layer = QgsVectorLayer(
+                            str(self.lineEdit_output.text()), "totalopenstation", "ogr"
+                        )
 
                         layer.isValid()
 
                         QgsProject.instance().addMapLayer(layer)
 
-                        QMessageBox.warning(self, 'Total Open Station luncher',
-                                                  'data loaded into panel Layer', QMessageBox.Ok)
+                        QMessageBox.warning(
+                            self,
+                            "Total Open Station luncher",
+                            "data loaded into panel Layer",
+                            QMessageBox.Ok,
+                        )
 
                         self.progressBar.reset()
-                        tempfile.mkstemp(suffix = '.csv')
-                        QgsVectorFileWriter.writeAsVectorFormat(layer, 'test.csv', "utf-8", driverName = "CSV")
+                        tempfile.mkstemp(suffix=".csv")
+                        QgsVectorFileWriter.writeAsVectorFormat(
+                            layer, "test.csv", "utf-8", driverName="CSV"
+                        )
 
-                        self.loadCsv('test.csv')
-                    elif self.comboBox_format2.currentIndex()== 1:
+                        self.loadCsv("test.csv")
+                    elif self.comboBox_format2.currentIndex() == 1:
 
-                        layer = QgsVectorLayer(str(self.lineEdit_output.text()), 'totalopenstation', 'ogr')
+                        layer = QgsVectorLayer(
+                            str(self.lineEdit_output.text()), "totalopenstation", "ogr"
+                        )
 
                         layer.isValid()
 
-
                         QgsProject.instance().addMapLayer(layer)
 
-                        QMessageBox.warning(self, 'Total Open Station luncher',
-                                                  'data loaded into panel Layer', QMessageBox.Ok)
+                        QMessageBox.warning(
+                            self,
+                            "Total Open Station luncher",
+                            "data loaded into panel Layer",
+                            QMessageBox.Ok,
+                        )
                         self.progressBar.reset()
-                        tempfile.mkstemp(suffix = '.csv')
-                        QgsVectorFileWriter.writeAsVectorFormat(layer, 'test.csv', "utf-8", driverName = "CSV")
-                        self.loadCsv('test.csv')
+                        tempfile.mkstemp(suffix=".csv")
+                        QgsVectorFileWriter.writeAsVectorFormat(
+                            layer, "test.csv", "utf-8", driverName="CSV"
+                        )
+                        self.loadCsv("test.csv")
 
-                    elif self.comboBox_format2.currentIndex()== 2:
+                    elif self.comboBox_format2.currentIndex() == 2:
 
                         self.convert_csv()
-                        uri = "file:///"+str(self.lineEdit_output.text())+"?type=csv&xField=x&yField=y&spatialIndex=yes&subsetIndex=yes&watchFile=no"
-                        layer = QgsVectorLayer(uri, "totalopenstation Pyarchinit Quote", "delimitedtext")
-
+                        uri = (
+                            "file:///"
+                            + str(self.lineEdit_output.text())
+                            + "?type=csv&xField=x&yField=y&spatialIndex=yes&subsetIndex=yes&watchFile=no"
+                        )
+                        layer = QgsVectorLayer(
+                            uri, "totalopenstation Pyarchinit Quote", "delimitedtext"
+                        )
 
                         layer.isValid()
 
-
                         QgsProject.instance().addMapLayer(layer)
 
-                        QMessageBox.warning(self, 'Total Open Station',
-                                                  'data loaded into panel Layer', QMessageBox.Ok)
-
+                        QMessageBox.warning(
+                            self,
+                            "Total Open Station",
+                            "data loaded into panel Layer",
+                            QMessageBox.Ok,
+                        )
 
                         self.loadCsv(str(self.lineEdit_output.text()))
 
-
-
-                        '''copy and past from totalstation to pyarchinit'''
-                        sourceLYR = QgsProject.instance().mapLayersByName('totalopenstation Pyarchinit Quote')[0]
-                        destLYR = QgsProject.instance().mapLayersByName('Quote US disegno')[0]
-                        #Dialog Box for input "name sito archeologico" to select it...
-                        ID_Sito = QInputDialog.getText(None, 'Sito', 'Input Nome del sito archeologico')
+                        """copy and past from totalstation to pyarchinit"""
+                        sourceLYR = QgsProject.instance().mapLayersByName(
+                            "totalopenstation Pyarchinit Quote"
+                        )[0]
+                        destLYR = QgsProject.instance().mapLayersByName(
+                            "Quote US disegno"
+                        )[0]
+                        # Dialog Box for input "name sito archeologico" to select it...
+                        ID_Sito = QInputDialog.getText(
+                            None, "Sito", "Input Nome del sito archeologico"
+                        )
                         Sito = str(ID_Sito[0])
-                        ID_M = QInputDialog.getText(None, 'Unità di misura', 'Input tipo di unità di misura\n (ex: metri)')
+                        ID_M = QInputDialog.getText(
+                            None,
+                            "Unità di misura",
+                            "Input tipo di unità di misura\n (ex: metri)",
+                        )
                         Misura = str(ID_M[0])
-                        ID_Disegnatore = QInputDialog.getText(None, 'Disegnatore', 'Input Nome del Disegnatore')
+                        ID_Disegnatore = QInputDialog.getText(
+                            None, "Disegnatore", "Input Nome del Disegnatore"
+                        )
                         Disegnatore = str(ID_Disegnatore[0])
                         features = []
                         if self.checkBox_coord.isChecked():
@@ -301,9 +402,8 @@ class TotalopenstationDialog(QtWidgets.QDockWidget, FORM_CLASS):
                             # x = float(ID_X[0])
                             # ID_Y = QInputDialog.getText(None, 'Y', 'Input Coord Y')
                             # y = float(ID_Y[0])
-                            ID_Z = QInputDialog.getText(None, 'Z', 'Input Elevation')
+                            ID_Z = QInputDialog.getText(None, "Z", "Input Elevation")
                             q = float(ID_Z[0])
-
 
                             # expression1 = QgsExpression('x($geometry)+{}'.format(x))
                             # expression2 = QgsExpression('y($geometry)+{}'.format(y))
@@ -317,14 +417,14 @@ class TotalopenstationDialog(QtWidgets.QDockWidget, FORM_CLASS):
                                 # b = expression2.evaluate(context)
                                 # if a and b:
                                 features.append(feature)
-                                feature.setAttribute('sito_q', Sito)
-                                feature.setAttribute('unita_misu_q', Misura)
-                                feature.setAttribute('x', str(date.today().isoformat()))
-                                feature.setAttribute('y', Disegnatore)
+                                feature.setAttribute("sito_q", Sito)
+                                feature.setAttribute("unita_misu_q", Misura)
+                                feature.setAttribute("x", str(date.today().isoformat()))
+                                feature.setAttribute("y", Disegnatore)
                                 attr_Q = feature.attributes()[5]
                                 p = q + float(attr_Q)
 
-                                feature.setAttribute('quota_q', p)
+                                feature.setAttribute("quota_q", p)
 
                                 # geom = feature.geometry()
                                 # geom.get().setX(a)
@@ -341,10 +441,10 @@ class TotalopenstationDialog(QtWidgets.QDockWidget, FORM_CLASS):
                             for feature in sourceLYR.getFeatures():
 
                                 features.append(feature)
-                                feature.setAttribute('sito_q', Sito)
-                                feature.setAttribute('unita_misu_q', Misura)
-                                feature.setAttribute('x', str(date.today().isoformat()))
-                                feature.setAttribute('y', Disegnatore)
+                                feature.setAttribute("sito_q", Sito)
+                                feature.setAttribute("unita_misu_q", Misura)
+                                feature.setAttribute("x", str(date.today().isoformat()))
+                                feature.setAttribute("y", Disegnatore)
 
                                 sourceLYR.updateFeature(feature)
                             destLYR.startEditing()
@@ -356,34 +456,44 @@ class TotalopenstationDialog(QtWidgets.QDockWidget, FORM_CLASS):
                         QgsProject.instance().removeMapLayer(sourceLYR)
                         ###########finish############################################
 
+                    elif self.comboBox_format2.currentIndex() == 3:
 
-                    elif self.comboBox_format2.currentIndex()== 3:
-
-
-                        uri = "file:///"+str(self.lineEdit_output.text())+"?type=csv&xField=x&yField=y&spatialIndex=yes&subsetIndex=yes&watchFile=no"
-                        layer = QgsVectorLayer(uri, "totalopenstation Pyarchinit riferimento", "delimitedtext")
-
+                        uri = (
+                            "file:///"
+                            + str(self.lineEdit_output.text())
+                            + "?type=csv&xField=x&yField=y&spatialIndex=yes&subsetIndex=yes&watchFile=no"
+                        )
+                        layer = QgsVectorLayer(
+                            uri,
+                            "totalopenstation Pyarchinit riferimento",
+                            "delimitedtext",
+                        )
 
                         layer.isValid()
 
-
                         QgsProject.instance().addMapLayer(layer)
 
-                        QMessageBox.warning(self, 'Total Open Station',
-                                                  'data loaded into panel Layer', QMessageBox.Ok)
-
+                        QMessageBox.warning(
+                            self,
+                            "Total Open Station",
+                            "data loaded into panel Layer",
+                            QMessageBox.Ok,
+                        )
 
                         self.loadCsv(str(self.lineEdit_output.text()))
 
+                        """copy and past from totalstation to pyarchinit"""
+                        sourceLYR = QgsProject.instance().mapLayersByName(
+                            "totalopenstation Pyarchinit riferimento"
+                        )[0]
+                        destLYR = QgsProject.instance().mapLayersByName(
+                            "Punti di riferimento"
+                        )[0]
 
-
-                        '''copy and past from totalstation to pyarchinit'''
-                        sourceLYR = QgsProject.instance().mapLayersByName('totalopenstation Pyarchinit riferimento')[0]
-                        destLYR = QgsProject.instance().mapLayersByName('Punti di riferimento')[0]
-
-
-                        #Dialog Box for input "name sito archeologico" to select it...
-                        ID_Sito = QInputDialog.getText(None, 'Sito', 'Input Nome del sito archeologico')
+                        # Dialog Box for input "name sito archeologico" to select it...
+                        ID_Sito = QInputDialog.getText(
+                            None, "Sito", "Input Nome del sito archeologico"
+                        )
                         Sito = str(ID_Sito[0])
                         features = []
                         if self.checkBox_coord.isChecked():
@@ -391,10 +501,8 @@ class TotalopenstationDialog(QtWidgets.QDockWidget, FORM_CLASS):
                             # x = float(ID_X[0])
                             # ID_Y = QInputDialog.getText(None, 'Y', 'Input Coord Y')
                             # y = float(ID_Y[0])
-                            ID_Z = QInputDialog.getText(None, 'Z', 'Input Elevation')
+                            ID_Z = QInputDialog.getText(None, "Z", "Input Elevation")
                             q = float(ID_Z[0])
-
-
 
                             # expression1 = QgsExpression('x($geometry)+{}'.format(x))
                             # expression2 = QgsExpression('y($geometry)+{}'.format(y))
@@ -409,18 +517,17 @@ class TotalopenstationDialog(QtWidgets.QDockWidget, FORM_CLASS):
                                 # if a and b:
                                 features.append(feature)
 
-                                feature.setAttribute('sito', Sito)
+                                feature.setAttribute("sito", Sito)
                                 attr_Q = feature.attributes()[4]
-                                p=q + float(attr_Q)
+                                p = q + float(attr_Q)
 
-                                feature.setAttribute('quota', p)
+                                feature.setAttribute("quota", p)
 
-                                    # geom = feature.geometry()
-                                    # geom.get().setX(a)
-                                    # geom.get().setY(b)
+                                # geom = feature.geometry()
+                                # geom.get().setX(a)
+                                # geom.get().setY(b)
 
-
-                                    # feature.setGeometry(geom)
+                                # feature.setGeometry(geom)
                                 sourceLYR.updateFeature(feature)
 
                             destLYR.startEditing()
@@ -428,16 +535,14 @@ class TotalopenstationDialog(QtWidgets.QDockWidget, FORM_CLASS):
                             data_provider.addFeatures(features)
                             iface.mapCanvas().zoomToSelected()
                             destLYR.commitChanges()
-
 
                         else:
 
                             features = []
                             for feature in sourceLYR.getFeatures():
                                 features.append(feature)
-                                feature.setAttribute('sito', Sito)
+                                feature.setAttribute("sito", Sito)
                                 sourceLYR.updateFeature(feature)
-
 
                             destLYR.startEditing()
                             data_provider = destLYR.dataProvider()
@@ -445,36 +550,44 @@ class TotalopenstationDialog(QtWidgets.QDockWidget, FORM_CLASS):
                             iface.mapCanvas().zoomToSelected()
                             destLYR.commitChanges()
 
-
                         QgsProject.instance().removeMapLayer(sourceLYR)
                         ###########finish############################################
 
+                    elif self.comboBox_format2.currentIndex() == 4:
 
-                    elif self.comboBox_format2.currentIndex()== 4:
-
-
-                        uri = "file:///"+str(self.lineEdit_output.text())+"?type=csv&xField=x&yField=y&spatialIndex=yes&subsetIndex=yes&watchFile=no"
-                        layer = QgsVectorLayer(uri, "totalopenstation Pyarchinit Sample", "delimitedtext")
-
+                        uri = (
+                            "file:///"
+                            + str(self.lineEdit_output.text())
+                            + "?type=csv&xField=x&yField=y&spatialIndex=yes&subsetIndex=yes&watchFile=no"
+                        )
+                        layer = QgsVectorLayer(
+                            uri, "totalopenstation Pyarchinit Sample", "delimitedtext"
+                        )
 
                         layer.isValid()
 
-
                         QgsProject.instance().addMapLayer(layer)
 
-                        QMessageBox.warning(self, 'Total Open Station',
-                                                  'data loaded into panel Layer', QMessageBox.Ok)
-
+                        QMessageBox.warning(
+                            self,
+                            "Total Open Station",
+                            "data loaded into panel Layer",
+                            QMessageBox.Ok,
+                        )
 
                         self.loadCsv(str(self.lineEdit_output.text()))
 
-
-
-                        '''copy and past from totalstation to pyarchinit'''
-                        sourceLYR = QgsProject.instance().mapLayersByName('totalopenstation Pyarchinit Sample')[0]
-                        destLYR = QgsProject.instance().mapLayersByName('Punti di campionatura')[0]
+                        """copy and past from totalstation to pyarchinit"""
+                        sourceLYR = QgsProject.instance().mapLayersByName(
+                            "totalopenstation Pyarchinit Sample"
+                        )[0]
+                        destLYR = QgsProject.instance().mapLayersByName(
+                            "Punti di campionatura"
+                        )[0]
                         # Dialog Box for input "name sito archeologico" to select it...
-                        ID_Sito = QInputDialog.getText(None, 'Sito', 'Input Nome del sito archeologico')
+                        ID_Sito = QInputDialog.getText(
+                            None, "Sito", "Input Nome del sito archeologico"
+                        )
                         Sito = str(ID_Sito[0])
                         # a=[]
                         if self.checkBox_coord.isChecked():
@@ -483,7 +596,6 @@ class TotalopenstationDialog(QtWidgets.QDockWidget, FORM_CLASS):
                             # ID_Y = QInputDialog.getText(None, 'Y', 'Input Coord Y')
                             # y = float(ID_Y[0])
 
-
                             features = []
                             # expression1 = QgsExpression('x($geometry)+{}'.format(x))
                             # expression2 = QgsExpression('y($geometry)+{}'.format(y))
@@ -498,7 +610,7 @@ class TotalopenstationDialog(QtWidgets.QDockWidget, FORM_CLASS):
                                 # if a and b:
                                 features.append(feature)
 
-                                feature.setAttribute('sito', Sito)
+                                feature.setAttribute("sito", Sito)
                                 # geom = feature.geometry()
                                 # geom.get().setX(a)
                                 # geom.get().setY(b)
@@ -512,13 +624,12 @@ class TotalopenstationDialog(QtWidgets.QDockWidget, FORM_CLASS):
                             iface.mapCanvas().zoomToSelected()
                             destLYR.commitChanges()
 
-
                         else:
 
                             features = []
                             for feature in sourceLYR.getFeatures():
                                 features.append(feature)
-                                feature.setAttribute('sito', Sito)
+                                feature.setAttribute("sito", Sito)
                                 sourceLYR.updateFeature(feature)
 
                             destLYR.startEditing()
@@ -530,125 +641,179 @@ class TotalopenstationDialog(QtWidgets.QDockWidget, FORM_CLASS):
                         QgsProject.instance().removeMapLayer(sourceLYR)
                         ###########finish############################################
 
-                    elif self.comboBox_format2.currentIndex()== 5:
-                        uri = "file:///"+str(self.lineEdit_output.text())+"?type=csv&xField=x&yField=y&spatialIndex=no&subsetIndex=no&watchFile=no"
-                        layer1 = QgsVectorLayer(uri, 'totalopenstation', "delimitedtext")
+                    elif self.comboBox_format2.currentIndex() == 5:
+                        uri = (
+                            "file:///"
+                            + str(self.lineEdit_output.text())
+                            + "?type=csv&xField=x&yField=y&spatialIndex=no&subsetIndex=no&watchFile=no"
+                        )
+                        layer1 = QgsVectorLayer(
+                            uri, "totalopenstation", "delimitedtext"
+                        )
 
-                        #layer.isValid()
+                        # layer.isValid()
 
                         QgsProject.instance().addMapLayer(layer1)
 
-                        QMessageBox.warning(self, 'Total Open Station',
-                                                  'data loaded into panel Layer', QMessageBox.Ok)
-
+                        QMessageBox.warning(
+                            self,
+                            "Total Open Station",
+                            "data loaded into panel Layer",
+                            QMessageBox.Ok,
+                        )
 
                         self.loadCsv(str(self.lineEdit_output.text()))
 
-
-
-
                     # elif self.comboBox_format2.currentIndex()== 6 or:
-                        # uri = "file:///"+str(self.lineEdit_output.text())+"?type=txt&xField=x&yField=y&spatialIndex=no&subsetIndex=no&watchFile=no"
-                        # layer1 = QgsVectorLayer(uri, 'totalopenstation', "delimitedtext")
+                    # uri = "file:///"+str(self.lineEdit_output.text())+"?type=txt&xField=x&yField=y&spatialIndex=no&subsetIndex=no&watchFile=no"
+                    # layer1 = QgsVectorLayer(uri, 'totalopenstation', "delimitedtext")
 
-                        # #layer.isValid()
+                    # #layer.isValid()
 
+                    # QgsProject.instance().addMapLayer(layer1)
 
-                        # QgsProject.instance().addMapLayer(layer1)
+                    # QMessageBox.warning(self, 'Total Open Station',
+                    # 'data loaded into panel Layer', QMessageBox.Ok)
 
-                        # QMessageBox.warning(self, 'Total Open Station',
-                                                  # 'data loaded into panel Layer', QMessageBox.Ok)
-
-
-                        # self.loadCsv(str(self.lineEdit_output.text()))
-
-
+                    # self.loadCsv(str(self.lineEdit_output.text()))
 
                     else:
 
-                        QMessageBox.warning(self, 'Total Open Station',
-                                              "Questo formato non verrà importato in QGIS ma solamente salvato", QMessageBox.Ok)
+                        QMessageBox.warning(
+                            self,
+                            "Total Open Station",
+                            "Questo formato non verrà importato in QGIS ma solamente salvato",
+                            QMessageBox.Ok,
+                        )
 
                 except Exception as e:
 
-                    QMessageBox.warning(self, 'Total Open Station',
-                                              "Error:\n"+str(e), QMessageBox.Ok)
+                    QMessageBox.warning(
+                        self, "Total Open Station", "Error:\n" + str(e), QMessageBox.Ok
+                    )
         else:
             try:  # os.system("start cmd /k" + ' python ' +cmd+' '+cmd2)
-                p = subprocess.check_call(
-                    ['python', cmd, '-i', str(self.lineEdit_input.text()), '-o', str(self.lineEdit_output.text()), '-f',
-                     self.comboBox_format.currentText(), '-t', self.comboBox_format2.currentText(), '--overwrite'],
-                    shell=True)
+                p = subprocess.run([
+                        sys.executable,
+                        cmd,
+                        "-i",
+                        str(self.lineEdit_input.text()),
+                        "-o",
+                        str(self.lineEdit_output.text()),
+                        "-f",
+                        self.comboBox_format.currentText(),
+                        "-t",
+                        self.comboBox_format2.currentText(),
+                        "--overwrite",
+                    ],
+                )
 
                 if self.comboBox_format2.currentIndex() == 0:
 
-                    layer = QgsVectorLayer(str(self.lineEdit_output.text()), 'totalopenstation', 'ogr')
+                    layer = QgsVectorLayer(
+                        str(self.lineEdit_output.text()), "totalopenstation", "ogr"
+                    )
 
                     layer.isValid()
 
                     QgsProject.instance().addMapLayer(layer)
 
-                    QMessageBox.warning(self, 'Total Open Station luncher',
-                                        'data loaded into panel Layer', QMessageBox.Ok)
+                    QMessageBox.warning(
+                        self,
+                        "Total Open Station luncher",
+                        "data loaded into panel Layer",
+                        QMessageBox.Ok,
+                    )
 
                     self.progressBar.reset()
-                    temp = tempfile.mkstemp(suffix='.csv')
-                    QgsVectorFileWriter.writeAsVectorFormat(layer, 'test.csv', "utf-8", driverName="CSV")
+                    temp = tempfile.mkstemp(suffix=".csv")
+                    QgsVectorFileWriter.writeAsVectorFormat(
+                        layer, "test.csv", "utf-8", driverName="CSV"
+                    )
 
-                    self.loadCsv('test.csv')
+                    self.loadCsv("test.csv")
                 elif self.comboBox_format2.currentIndex() == 1:
 
-                    layer = QgsVectorLayer(str(self.lineEdit_output.text()), 'totalopenstation', 'ogr')
+                    layer = QgsVectorLayer(
+                        str(self.lineEdit_output.text()), "totalopenstation", "ogr"
+                    )
 
                     layer.isValid()
 
                     QgsProject.instance().addMapLayer(layer)
 
-                    QMessageBox.warning(self, 'Total Open Station luncher',
-                                        'data loaded into panel Layer', QMessageBox.Ok)
+                    QMessageBox.warning(
+                        self,
+                        "Total Open Station luncher",
+                        "data loaded into panel Layer",
+                        QMessageBox.Ok,
+                    )
                     self.progressBar.reset()
-                    temp = tempfile.mkstemp(suffix='.csv')
-                    QgsVectorFileWriter.writeAsVectorFormat(layer, 'test.csv', "utf-8", driverName="CSV")
-                    self.loadCsv('test.csv')
+                    temp = tempfile.mkstemp(suffix=".csv")
+                    QgsVectorFileWriter.writeAsVectorFormat(
+                        layer, "test.csv", "utf-8", driverName="CSV"
+                    )
+                    self.loadCsv("test.csv")
 
                 elif self.comboBox_format2.currentIndex() == 2:
 
                     self.convert_csv()
-                    uri = "file:///" + str(
-                        self.lineEdit_output.text()) + "?type=csv&xField=x&yField=y&spatialIndex=yes&subsetIndex=yes&watchFile=no"
-                    layer = QgsVectorLayer(uri, "totalopenstation Pyarchinit Quote", "delimitedtext")
+                    uri = (
+                        "file:///"
+                        + str(self.lineEdit_output.text())
+                        + "?type=csv&xField=x&yField=y&spatialIndex=yes&subsetIndex=yes&watchFile=no"
+                    )
+                    layer = QgsVectorLayer(
+                        uri, "totalopenstation Pyarchinit Quote", "delimitedtext"
+                    )
 
                     layer.isValid()
 
                     QgsProject.instance().addMapLayer(layer)
 
-                    QMessageBox.warning(self, 'Total Open Station',
-                                        'data loaded into panel Layer', QMessageBox.Ok)
+                    QMessageBox.warning(
+                        self,
+                        "Total Open Station",
+                        "data loaded into panel Layer",
+                        QMessageBox.Ok,
+                    )
 
                     self.loadCsv(str(self.lineEdit_output.text()))
 
-                    '''copy and past from totalstation to pyarchinit'''
-                    sourceLYR = QgsProject.instance().mapLayersByName('totalopenstation Pyarchinit Quote')[0]
-                    destLYR = QgsProject.instance().mapLayersByName('Quote US disegno')[0]
+                    """copy and past from totalstation to pyarchinit"""
+                    sourceLYR = QgsProject.instance().mapLayersByName(
+                        "totalopenstation Pyarchinit Quote"
+                    )[0]
+                    destLYR = QgsProject.instance().mapLayersByName("Quote US disegno")[
+                        0
+                    ]
                     # Dialog Box for input "name sito archeologico" to select it...
-                    ID_Sito = QInputDialog.getText(None, 'Sito', 'Input Nome del sito archeologico')
+                    ID_Sito = QInputDialog.getText(
+                        None, "Sito", "Input Nome del sito archeologico"
+                    )
                     Sito = str(ID_Sito[0])
-                    ID_M = QInputDialog.getText(None, 'Unità di misura', 'Input tipo di unità di misura\n (ex: metri)')
+                    ID_M = QInputDialog.getText(
+                        None,
+                        "Unità di misura",
+                        "Input tipo di unità di misura\n (ex: metri)",
+                    )
                     Misura = str(ID_M[0])
-                    ID_Disegnatore = QInputDialog.getText(None, 'Disegnatore', 'Input Nome del Disegnatore')
+                    ID_Disegnatore = QInputDialog.getText(
+                        None, "Disegnatore", "Input Nome del Disegnatore"
+                    )
                     Disegnatore = str(ID_Disegnatore[0])
 
                     if self.checkBox_coord.isChecked():
-                        ID_X = QInputDialog.getText(None, 'X', 'Input coord X')
+                        ID_X = QInputDialog.getText(None, "X", "Input coord X")
                         x = float(ID_X[0])
-                        ID_Y = QInputDialog.getText(None, 'Y', 'Input Coord Y')
+                        ID_Y = QInputDialog.getText(None, "Y", "Input Coord Y")
                         y = float(ID_Y[0])
-                        ID_Z = QInputDialog.getText(None, 'Z', 'Input Elevation')
+                        ID_Z = QInputDialog.getText(None, "Z", "Input Elevation")
                         q = float(ID_Z[0])
 
                         features = []
-                        expression1 = QgsExpression('x($geometry)+{}'.format(x))
-                        expression2 = QgsExpression('y($geometry)+{}'.format(y))
+                        expression1 = QgsExpression("x($geometry)+{}".format(x))
+                        expression2 = QgsExpression("y($geometry)+{}".format(y))
                         context = QgsExpressionContext()
                         scope = QgsExpressionContextScope()
                         context.appendScope(scope)
@@ -659,14 +824,14 @@ class TotalopenstationDialog(QtWidgets.QDockWidget, FORM_CLASS):
                             b = expression2.evaluate(context)
                             if a and b:
                                 features.append(feature)
-                                feature.setAttribute('sito_q', Sito)
-                                feature.setAttribute('unita_misu_q', Misura)
-                                feature.setAttribute('x', str(date.today().isoformat()))
-                                feature.setAttribute('y', Disegnatore)
+                                feature.setAttribute("sito_q", Sito)
+                                feature.setAttribute("unita_misu_q", Misura)
+                                feature.setAttribute("x", str(date.today().isoformat()))
+                                feature.setAttribute("y", Disegnatore)
                                 attr_Q = feature.attributes()[5]
                                 p = q + float(attr_Q)
 
-                                feature.setAttribute('quota_q', p)
+                                feature.setAttribute("quota_q", p)
 
                                 geom = feature.geometry()
                                 geom.get().setX(a)
@@ -682,10 +847,10 @@ class TotalopenstationDialog(QtWidgets.QDockWidget, FORM_CLASS):
                     else:
                         for feature in sourceLYR.getFeatures():
                             features.append(feature)
-                            feature.setAttribute('sito_q', Sito)
-                            feature.setAttribute('unita_misu_q', Misura)
-                            feature.setAttribute('x', str(date.today().isoformat()))
-                            feature.setAttribute('y', Disegnatore)
+                            feature.setAttribute("sito_q", Sito)
+                            feature.setAttribute("unita_misu_q", Misura)
+                            feature.setAttribute("x", str(date.today().isoformat()))
+                            feature.setAttribute("y", Disegnatore)
 
                             sourceLYR.updateFeature(feature)
                         destLYR.startEditing()
@@ -696,42 +861,56 @@ class TotalopenstationDialog(QtWidgets.QDockWidget, FORM_CLASS):
 
                     QgsProject.instance().removeMapLayer(sourceLYR)
                     ###########finish############################################
-
 
                 elif self.comboBox_format2.currentIndex() == 3:
 
-                    uri = "file:///" + str(
-                        self.lineEdit_output.text()) + "?type=csv&xField=x&yField=y&spatialIndex=yes&subsetIndex=yes&watchFile=no"
-                    layer = QgsVectorLayer(uri, "totalopenstation Pyarchinit riferimento", "delimitedtext")
+                    uri = (
+                        "file:///"
+                        + str(self.lineEdit_output.text())
+                        + "?type=csv&xField=x&yField=y&spatialIndex=yes&subsetIndex=yes&watchFile=no"
+                    )
+                    layer = QgsVectorLayer(
+                        uri, "totalopenstation Pyarchinit riferimento", "delimitedtext"
+                    )
 
                     layer.isValid()
 
                     QgsProject.instance().addMapLayer(layer)
 
-                    QMessageBox.warning(self, 'Total Open Station',
-                                        'data loaded into panel Layer', QMessageBox.Ok)
+                    QMessageBox.warning(
+                        self,
+                        "Total Open Station",
+                        "data loaded into panel Layer",
+                        QMessageBox.Ok,
+                    )
 
                     self.loadCsv(str(self.lineEdit_output.text()))
 
-                    '''copy and past from totalstation to pyarchinit'''
-                    sourceLYR = QgsProject.instance().mapLayersByName('totalopenstation Pyarchinit riferimento')[0]
-                    destLYR = QgsProject.instance().mapLayersByName('Punti di riferimento')[0]
+                    """copy and past from totalstation to pyarchinit"""
+                    sourceLYR = QgsProject.instance().mapLayersByName(
+                        "totalopenstation Pyarchinit riferimento"
+                    )[0]
+                    destLYR = QgsProject.instance().mapLayersByName(
+                        "Punti di riferimento"
+                    )[0]
 
                     # Dialog Box for input "name sito archeologico" to select it...
-                    ID_Sito = QInputDialog.getText(None, 'Sito', 'Input Nome del sito archeologico')
+                    ID_Sito = QInputDialog.getText(
+                        None, "Sito", "Input Nome del sito archeologico"
+                    )
                     Sito = str(ID_Sito[0])
                     # a=[]
                     if self.checkBox_coord.isChecked():
-                        ID_X = QInputDialog.getText(None, 'X', 'Input coord X')
+                        ID_X = QInputDialog.getText(None, "X", "Input coord X")
                         x = float(ID_X[0])
-                        ID_Y = QInputDialog.getText(None, 'Y', 'Input Coord Y')
+                        ID_Y = QInputDialog.getText(None, "Y", "Input Coord Y")
                         y = float(ID_Y[0])
-                        ID_Z = QInputDialog.getText(None, 'Z', 'Input Elevation')
+                        ID_Z = QInputDialog.getText(None, "Z", "Input Elevation")
                         q = float(ID_Z[0])
 
                         features = []
-                        expression1 = QgsExpression('x($geometry)+{}'.format(x))
-                        expression2 = QgsExpression('y($geometry)+{}'.format(y))
+                        expression1 = QgsExpression("x($geometry)+{}".format(x))
+                        expression2 = QgsExpression("y($geometry)+{}".format(y))
                         context = QgsExpressionContext()
                         scope = QgsExpressionContextScope()
                         context.appendScope(scope)
@@ -743,11 +922,11 @@ class TotalopenstationDialog(QtWidgets.QDockWidget, FORM_CLASS):
                             if a and b:
                                 features.append(feature)
 
-                                feature.setAttribute('sito', Sito)
+                                feature.setAttribute("sito", Sito)
                                 attr_Q = feature.attributes()[4]
                                 p = q + float(attr_Q)
 
-                                feature.setAttribute('quota', p)
+                                feature.setAttribute("quota", p)
 
                                 geom = feature.geometry()
                                 geom.get().setX(a)
@@ -762,13 +941,12 @@ class TotalopenstationDialog(QtWidgets.QDockWidget, FORM_CLASS):
                         iface.mapCanvas().zoomToSelected()
                         destLYR.commitChanges()
 
-
                     else:
 
                         features = []
                         for feature in sourceLYR.getFeatures():
                             features.append(feature)
-                            feature.setAttribute('sito', Sito)
+                            feature.setAttribute("sito", Sito)
                             sourceLYR.updateFeature(feature)
 
                         destLYR.startEditing()
@@ -780,38 +958,52 @@ class TotalopenstationDialog(QtWidgets.QDockWidget, FORM_CLASS):
                     QgsProject.instance().removeMapLayer(sourceLYR)
                     ###########finish############################################
 
-
                 elif self.comboBox_format2.currentIndex() == 4:
 
-                    uri = "file:///" + str(
-                        self.lineEdit_output.text()) + "?type=csv&xField=x&yField=y&spatialIndex=yes&subsetIndex=yes&watchFile=no"
-                    layer = QgsVectorLayer(uri, "totalopenstation Pyarchinit Sample", "delimitedtext")
+                    uri = (
+                        "file:///"
+                        + str(self.lineEdit_output.text())
+                        + "?type=csv&xField=x&yField=y&spatialIndex=yes&subsetIndex=yes&watchFile=no"
+                    )
+                    layer = QgsVectorLayer(
+                        uri, "totalopenstation Pyarchinit Sample", "delimitedtext"
+                    )
 
                     layer.isValid()
 
                     QgsProject.instance().addMapLayer(layer)
 
-                    QMessageBox.warning(self, 'Total Open Station',
-                                        'data loaded into panel Layer', QMessageBox.Ok)
+                    QMessageBox.warning(
+                        self,
+                        "Total Open Station",
+                        "data loaded into panel Layer",
+                        QMessageBox.Ok,
+                    )
 
                     self.loadCsv(str(self.lineEdit_output.text()))
 
-                    '''copy and past from totalstation to pyarchinit'''
-                    sourceLYR = QgsProject.instance().mapLayersByName('totalopenstation Pyarchinit Sample')[0]
-                    destLYR = QgsProject.instance().mapLayersByName('Punti di campionatura')[0]
+                    """copy and past from totalstation to pyarchinit"""
+                    sourceLYR = QgsProject.instance().mapLayersByName(
+                        "totalopenstation Pyarchinit Sample"
+                    )[0]
+                    destLYR = QgsProject.instance().mapLayersByName(
+                        "Punti di campionatura"
+                    )[0]
                     # Dialog Box for input "name sito archeologico" to select it...
-                    ID_Sito = QInputDialog.getText(None, 'Sito', 'Input Nome del sito archeologico')
+                    ID_Sito = QInputDialog.getText(
+                        None, "Sito", "Input Nome del sito archeologico"
+                    )
                     Sito = str(ID_Sito[0])
                     # a=[]
                     if self.checkBox_coord.isChecked():
-                        ID_X = QInputDialog.getText(None, 'X', 'Input coord X')
+                        ID_X = QInputDialog.getText(None, "X", "Input coord X")
                         x = float(ID_X[0])
-                        ID_Y = QInputDialog.getText(None, 'Y', 'Input Coord Y')
+                        ID_Y = QInputDialog.getText(None, "Y", "Input Coord Y")
                         y = float(ID_Y[0])
 
                         features = []
-                        expression1 = QgsExpression('x($geometry)+{}'.format(x))
-                        expression2 = QgsExpression('y($geometry)+{}'.format(y))
+                        expression1 = QgsExpression("x($geometry)+{}".format(x))
+                        expression2 = QgsExpression("y($geometry)+{}".format(y))
                         context = QgsExpressionContext()
                         scope = QgsExpressionContextScope()
                         context.appendScope(scope)
@@ -823,7 +1015,7 @@ class TotalopenstationDialog(QtWidgets.QDockWidget, FORM_CLASS):
                             if a and b:
                                 features.append(feature)
 
-                                feature.setAttribute('sito', Sito)
+                                feature.setAttribute("sito", Sito)
                                 geom = feature.geometry()
                                 geom.get().setX(a)
                                 geom.get().setY(b)
@@ -837,13 +1029,12 @@ class TotalopenstationDialog(QtWidgets.QDockWidget, FORM_CLASS):
                         iface.mapCanvas().zoomToSelected()
                         destLYR.commitChanges()
 
-
                     else:
 
                         features = []
                         for feature in sourceLYR.getFeatures():
                             features.append(feature)
-                            feature.setAttribute('sito', Sito)
+                            feature.setAttribute("sito", Sito)
                             sourceLYR.updateFeature(feature)
 
                         destLYR.startEditing()
@@ -856,83 +1047,85 @@ class TotalopenstationDialog(QtWidgets.QDockWidget, FORM_CLASS):
                     ###########finish############################################
 
                 elif self.comboBox_format2.currentIndex() == 5:
-                    uri = "file:///" + str(
-                        self.lineEdit_output.text()) + "?type=csv&xField=x&yField=y&spatialIndex=no&subsetIndex=no&watchFile=no"
-                    layer1 = QgsVectorLayer(uri, 'totalopenstation', "delimitedtext")
+                    uri = (
+                        "file:///"
+                        + str(self.lineEdit_output.text())
+                        + "?type=csv&xField=x&yField=y&spatialIndex=no&subsetIndex=no&watchFile=no"
+                    )
+                    layer1 = QgsVectorLayer(uri, "totalopenstation", "delimitedtext")
 
                     # layer.isValid()
 
                     QgsProject.instance().addMapLayer(layer1)
 
-                    QMessageBox.warning(self, 'Total Open Station',
-                                        'data loaded into panel Layer', QMessageBox.Ok)
+                    QMessageBox.warning(
+                        self,
+                        "Total Open Station",
+                        "data loaded into panel Layer",
+                        QMessageBox.Ok,
+                    )
 
                     self.loadCsv(str(self.lineEdit_output.text()))
-
-
-
 
                 else:
 
                     pass
 
             except Exception as e:
-
-                QMessageBox.warning(self, 'Total Open Station',
-                                    "Error:\n" + str(e), QMessageBox.Ok)
+                QMessageBox.warning(
+                    self, "Total Open Station", "Error:\n" + str(e), QMessageBox.Ok
+                )
 
     def rmvLyr(lyrname):
         qinst = QgsProject.instance()
         qinst.removeMapLayer(qinst.mapLayersByName(lyrname)[0].id())
 
-
     def check_layer(self):
 
-        if not bool(len(QgsProject.instance().mapLayersByName('TOPS-second_job'))) or len(QgsProject.instance().mapLayersByName('TOPS-first_job')):
-
+        if not bool(
+            len(QgsProject.instance().mapLayersByName("TOPS-second_job"))
+        ) or len(QgsProject.instance().mapLayersByName("TOPS-first_job")):
 
             self.pushButton_rt.setHidden(True)
         else:
-            QMessageBox.warning(self, 'Total Open Station',
-                                "Ricordati che il file da rototraslare deve essere nominato TOPS-second_job",
-                                QMessageBox.Ok)
+            QMessageBox.warning(
+                self,
+                "Total Open Station",
+                "Ricordati che il file da rototraslare deve essere nominato TOPS-second_job",
+                QMessageBox.Ok,
+            )
             self.pushButton_rt.setHidden(False)
 
-
     def selection_point(self):
-        #self.check_layer()
-        try:# attivo il layer che voglio traslare
-
+        # self.check_layer()
+        try:  # attivo il layer che voglio traslare
 
             # layer su cui scegliere ilpunto per traslare
-            b = QgsProject.instance().mapLayersByName('TOPS-first_job')[0]
+            b = QgsProject.instance().mapLayersByName("TOPS-first_job")[0]
 
             # avvio editing
-            #a.startEditing()
+            # a.startEditing()
 
             # seleziono il punto dalla poligonale su cui devo traslare
             # QMessageBox.information(self, 'TotalopeStation', 'Select the Point where you want translate from the first job in tha map canvas')
 
             selection = b.selectedFeatures()
 
-
             # estraggo le coordinate x y
-            pt = QgsPointXY(selection[0]['x'], selection[0]['y'])
+            pt = QgsPointXY(selection[0]["x"], selection[0]["y"])
             print(pt)
             self.lineEdit_x_destination.setText(str(pt[0]))
             self.lineEdit_x_destination.text()
             self.lineEdit_y_destination.setText(str(pt[1]))
             self.lineEdit_y_destination.text()
 
-
-
         except Exception as e:
-            QMessageBox.information(self, 'TotalopenStation',str(e))
+            QMessageBox.information(self, "TotalopenStation", str(e))
 
     def selection_origin(self):
-        b = QgsProject.instance().mapLayersByName('TOPS-first_job')[0]
+        b = QgsProject.instance().mapLayersByName("TOPS-first_job")[0]
         selection_or = b.selectedFeatures()
-        pt2 = QgsPointXY(selection_or[0]['x'], selection_or[0]['y'])
+        pt2 = QgsPointXY(selection_or[0]["x"], selection_or[0]["y"])
         print(pt2)
         self.lineEdit_x_origin.setText(str(pt2[0]))
         self.lineEdit_x_origin.text()
@@ -940,118 +1133,139 @@ class TotalopenstationDialog(QtWidgets.QDockWidget, FORM_CLASS):
         self.lineEdit_y_origin.text()
 
     def on_pushButton_crs_pressed(self):
-        if QgsCoordinateReferenceSystem().fromProj4("+proj=tmerc +ellps=WGS84 +datum=WGS84 +units=m +no_defs +lon_0=0 +x_0=0 +y_0=0 +k_0=0.996").isValid()==False:
+        if (
+            QgsCoordinateReferenceSystem()
+            .fromProj4(
+                "+proj=tmerc +ellps=WGS84 +datum=WGS84 +units=m +no_defs +lon_0=0 +x_0=0 +y_0=0 +k_0=0.996"
+            )
+            .isValid()
+            == False
+        ):
             crs = QgsCoordinateReferenceSystem()
-            #if crs.toProj4()=="+proj=tmerc +ellps=WGS84 +datum=WGS84 +units=m +no_defs +lon_0=0 +x_0=0 +y_0=0 +k_0=0.996":
-            #crs.createFromSrsId(100000)
-            crs.createFromProj4("+proj=tmerc +ellps=WGS84 +datum=WGS84 +units=m +no_defs +lon_0=0 +x_0=0 +y_0=0 +k_0=0.996")
+            # if crs.toProj4()=="+proj=tmerc +ellps=WGS84 +datum=WGS84 +units=m +no_defs +lon_0=0 +x_0=0 +y_0=0 +k_0=0.996":
+            # crs.createFromSrsId(100000)
+            crs.createFromProj4(
+                "+proj=tmerc +ellps=WGS84 +datum=WGS84 +units=m +no_defs +lon_0=0 +x_0=0 +y_0=0 +k_0=0.996"
+            )
             crs.saveAsUserCrs("UCS")
             QgsProject.instance().setCrs(crs)
         else:
-            crs = QgsCoordinateReferenceSystem().fromProj4("+proj=tmerc +ellps=WGS84 +datum=WGS84 +units=m +no_defs +lon_0=0 +x_0=0 +y_0=0 +k_0=0.996")
+            crs = QgsCoordinateReferenceSystem().fromProj4(
+                "+proj=tmerc +ellps=WGS84 +datum=WGS84 +units=m +no_defs +lon_0=0 +x_0=0 +y_0=0 +k_0=0.996"
+            )
             QgsProject.instance().setCrs(crs)
 
     def on_pushButton_rt_pressed(self):
-        QMessageBox.information(self, 'TotalopenStation',
-                                'Select the Point where you want translate and than the origin point of your poligonal from the first job in tha map canvas')
+        QMessageBox.information(
+            self,
+            "TotalopenStation",
+            "Select the Point where you want translate and than the origin point of your poligonal from the first job in tha map canvas",
+        )
 
-        #self.selection_point()
-        #self.check_layer()
+        # self.selection_point()
+        # self.check_layer()
         # attivo il layer che voglio traslare
         crs = QgsCoordinateReferenceSystem().fromProj4(
-            "+proj=tmerc +ellps=WGS84 +datum=WGS84 +units=m +no_defs +lon_0=0 +x_0=0 +y_0=0 +k_0=0.996")
+            "+proj=tmerc +ellps=WGS84 +datum=WGS84 +units=m +no_defs +lon_0=0 +x_0=0 +y_0=0 +k_0=0.996"
+        )
 
-
-        a = QgsProject.instance().mapLayersByName('TOPS-second_job')[0]
+        a = QgsProject.instance().mapLayersByName("TOPS-second_job")[0]
         a.setCrs(crs)
         # layer su cui scegliere il punto per traslare
-        b = QgsProject.instance().mapLayersByName('TOPS-first_job')[0]
+        b = QgsProject.instance().mapLayersByName("TOPS-first_job")[0]
         b.setCrs(crs)
         # avvio editing
-
-
 
         a.startEditing()
         ptx = self.lineEdit_x_destination.text()
 
         pty = self.lineEdit_y_destination.text()
 
-
         pt2x = self.lineEdit_x_origin.text()
 
         pt2y = self.lineEdit_y_origin.text()
         # seleziono il punto dalla poligonale su cui devo traslare
-        #QMessageBox.information(self, 'TotalopeStation', 'Select the Point where you want translate from the first job in tha map canvas')
+        # QMessageBox.information(self, 'TotalopeStation', 'Select the Point where you want translate from the first job in tha map canvas')
         try:
 
-                # preparo il context
-                context = QgsExpressionContext()
-                scope = QgsExpressionContextScope()
-                context.appendScope(scope)
+            # preparo il context
+            context = QgsExpressionContext()
+            scope = QgsExpressionContextScope()
+            context.appendScope(scope)
 
-                # espressione per traslare sul punto selezionato della poligonale
-                e1 = QgsExpression('translate($geometry,{},{})'.format(ptx, pty))
+            # espressione per traslare sul punto selezionato della poligonale
+            e1 = QgsExpression("translate($geometry,{},{})".format(ptx, pty))
 
-                # devi selezionare  il punto d'origine della poligonale
-                #QMessageBox.information(self, 'TotalopeStation','Select origin Point of first job, inthe map canvas')
+            # devi selezionare  il punto d'origine della poligonale
+            # QMessageBox.information(self, 'TotalopeStation','Select origin Point of first job, inthe map canvas')
 
+            # espressione per calcolare l'azimut in gradi sulla linea al punto di origine
+            e2 = QgsExpression(
+                "degrees(azimuth(make_point({},{}), make_point({},{})))".format(
+                    ptx, pty, pt2x, pt2y
+                )
+            )
 
-                # espressione per calcolare l'azimut in gradi sulla linea al punto di origine
-                e2 = QgsExpression('degrees(azimuth(make_point({},{}), make_point({},{})))'.format(ptx, pty,pt2x,pt2y))
+            print(e2)
 
-                print(e2)
+            r = e2.evaluate(context)
+            print(r)
 
-                r = e2.evaluate(context)
-                print(r)
+            # espressione per ruotare
+            e3 = QgsExpression(
+                "rotate( $geometry, {}, make_point({},{}))".format(r, ptx, pty)
+            )
+            print(e3)
 
-                # espressione per ruotare
-                e3 = QgsExpression('rotate( $geometry, {}, make_point({},{}))'.format(r, ptx, pty))
-                print(e3)
+            # espressione per aggiornare i campi x y del vettore ruotato
+            e4 = QgsExpression("$x")
+            e5 = QgsExpression("$y")
 
-                # espressione per aggiornare i campi x y del vettore ruotato
-                e4 = QgsExpression('$x')
-                e5 = QgsExpression('$y')
+            print(e4)
 
-                print(e4)
+            # ciclo for per aggiornare le geometrie con l'espressione di traslazione
+            for f in a.getFeatures():
+                QCoreApplication.processEvents()
+                scope.setFeature(f)
+                d = e1.evaluate(context)
+                print(d)
+                f.setGeometry(d)
+                a.updateFeature(f)
 
-                # ciclo for per aggiornare le geometrie con l'espressione di traslazione
-                for f in a.getFeatures():
-                    QCoreApplication.processEvents()
-                    scope.setFeature(f)
-                    d = e1.evaluate(context)
-                    print(d)
-                    f.setGeometry(d)
-                    a.updateFeature(f)
+            # ciclo for per aggiornare le geometrie con l'espressione di rotazione
+            for s in a.getFeatures():
+                QCoreApplication.processEvents()
+                scope.setFeature(s)
+                d = e3.evaluate(context)
+                print(d)
+                s.setGeometry(d)
+                a.updateFeature(s)
 
-                # ciclo for per aggiornare le geometrie con l'espressione di rotazione
-                for s in a.getFeatures():
-                    QCoreApplication.processEvents()
-                    scope.setFeature(s)
-                    d = e3.evaluate(context)
-                    print(d)
-                    s.setGeometry(d)
-                    a.updateFeature(s)
+                # aggiorno i campi x y della tabella ruotata
+            for g in a.getFeatures():
+                QCoreApplication.processEvents()
+                scope.setFeature(g)
+                d1 = g["x"] = e4.evaluate(context)
+                d2 = g["y"] = e5.evaluate(context)
+                print(d1, d2)
+                # s.setGeometry(d)
+                a.updateFeature(g)
 
-                    # aggiorno i campi x y della tabella ruotata
-                for g in a.getFeatures():
-                    QCoreApplication.processEvents()
-                    scope.setFeature(g)
-                    d1 = g['x'] = e4.evaluate(context)
-                    d2 = g['y'] = e5.evaluate(context)
-                    print(d1, d2)
-                    # s.setGeometry(d)
-                    a.updateFeature(g)
-
+            self.canvas.refresh()
+            value = QMessageBox.information(
+                self,
+                "TotalOpenStation",
+                "rototranslation completed, click ok to commit change else cancel "
+                "to rollback",
+                QMessageBox.Ok | QMessageBox.Cancel,
+            )  # salvo e chiudo
+            if value == QMessageBox.Ok:
+                a.commitChanges()
+            elif value == QMessageBox.Cancel:
+                # a.actionRollbackEdits().trigger()
+                iface.actionRollbackEdits().trigger()
+                a.commitChanges()
                 self.canvas.refresh()
-                value=QMessageBox.information(self,'TotalOpenStation', 'rototranslation completed, click ok to commit change else cancel '
-                                                               'to rollback', QMessageBox.Ok|QMessageBox.Cancel)    # salvo e chiudo
-                if value == QMessageBox.Ok:
-                    a.commitChanges()
-                elif value == QMessageBox.Cancel:
-                    #a.actionRollbackEdits().trigger()
-                    iface.actionRollbackEdits().trigger()
-                    a.commitChanges()
-                    self.canvas.refresh()
 
         except:
             pass
@@ -1061,63 +1275,53 @@ class TotalopenstationDialog(QtWidgets.QDockWidget, FORM_CLASS):
             self.on_pushButton_export_matrix_pressed()
         else:
             pass
+
     def on_pushButton_connect_pressed(self):
         self.textEdit.clear()
+        python_exe=self.find_python()
+        b = Path(QgsApplication.qgisSettingsDirPath())
+        cmd = os.path.join(
+            os.sep,
+            b,
+            "python",
+            "plugins",
+            "totalopenstationToQgis",
+            "scripts",
+            "totalopenstation-cli-connector.py",
+        )
 
-        if platform.system() == "Windows":
-            b=QgsApplication.qgisSettingsDirPath().replace("/","\\")
-            cmd = os.path.join(os.sep, b , 'python', 'plugins', 'totalopenstationToQgis', 'scripts', 'totalopenstation-cli-connector.py')
+        try:
+            c = subprocess.run(
+                [
+                    python_exe,
+                    cmd,
+                    "-m",
+                    self.comboBox_model.currentText(),
+                    "-p",
+                    self.comboBox_port.currentText(),
+                    "-o",
+                    str(self.lineEdit_save_raw.text()),
+                ],
+            )
 
-            try:
-                c=subprocess.check_call(['python', cmd,'-m',self.comboBox_model.currentText(),'-p',self.comboBox_port.currentText(),'-o',str(self.lineEdit_save_raw.text())], shell=True)
+        except Exception as e:
+            if self.comboBox_port.currentText() == "":
+                self.textEdit.appendPlainText("Insert port please!")
 
-
-
-            except Exception as e:
-                if self.comboBox_port.currentText()=='':
-                    self.textEdit.appendPlainText('Insert port please!')
-
-                self.textEdit.appendPlainText('Connection falied!')
-
-            else:
-                self.textEdit.appendPlainText('Connection OK.................!\n\n')
-                self.textEdit.appendPlainText('Start dowload data.................!\n\n')
-                #s = io.StringIO()
-                #for i in tqdm(range(3), file=s):
-                    #sleep(.1)
-                #self.textEdit.appendPlainText(s.getvalue())
-
-                self.textEdit.appendPlainText('Dowload finished.................!\n\n')
-                self.textEdit.appendPlainText('Result:\n')
-                r=open(str(self.lineEdit_save_raw.text()),'r')
-                lines = r.read().split(',')
-                self.textEdit.appendPlainText(str(lines))
+            self.textEdit.appendPlainText("Connection falied!")
 
         else:
-            b=QgsApplication.qgisSettingsDirPath()
-            cmd = os.path.join(os.sep, b , 'python', 'plugins', 'totalopenstationToQgis', 'scripts', 'totalopenstation-cli-connector.py')
-            #os.system("start cmd /k" + ' python ' +cmd)
-            try:
-                c=subprocess.check_call(['python', cmd,'-m',self.comboBox_model.currentText(),'-p',self.comboBox_port.currentText(),'-o',str(self.lineEdit_save_raw.text())], shell=True)
+            self.textEdit.appendPlainText("Connection OK.................!\n\n")
+            self.textEdit.appendPlainText(
+                "Start dowload data.................!\n\n"
+            )
+            # s = io.StringIO()
+            # for i in tqdm(range(3), file=s):
+            # sleep(.1)
+            # self.textEdit.appendPlainText(s.getvalue())
 
-
-
-            except Exception as e:
-                if self.comboBox_port.currentText()=='':
-                    self.textEdit.appendPlainText('Insert port please!')
-
-                self.textEdit.appendPlainText('Connection falied!')
-
-            else:
-                self.textEdit.appendPlainText('Connection OK.................!\n\n\n')
-                self.textEdit.appendPlainText('Start dowload data.................!\n\n\n')
-                #s = io.StringIO()
-                #for i in tqdm(range(3), file=s):
-                    #sleep(.1)
-                #self.textEdit.appendPlainTextPlainText(s.getvalue())
-
-                self.textEdit.appendPlainText('Dowload finished.................!\n\n\n')
-                self.textEdit.appendPlainText('Result:\n')
-                r=open(str(self.lineEdit_save_raw.text()),'r')
-                lines = r.read().split(',')
-                self.textEdit.appendPlainText(str(lines))
+            self.textEdit.appendPlainText("Dowload finished.................!\n\n")
+            self.textEdit.appendPlainText("Result:\n")
+            r = open(str(self.lineEdit_save_raw.text()), "r")
+            lines = r.read().split(",")
+            self.textEdit.appendPlainText(str(lines))
