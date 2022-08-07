@@ -30,11 +30,8 @@ import platform
 import csv
 import tempfile
 import textwrap as tr
-from qgis.PyQt import uic
-from qgis.PyQt.QtGui import (
-    QStandardItem,
-    QStandardItemModel
-)
+from qgis.PyQt import *
+from qgis.PyQt.QtGui import *
 from qgis.PyQt.QtCore import *
 from qgis.PyQt.QtWidgets import (
     QVBoxLayout,
@@ -47,7 +44,6 @@ from qgis.PyQt.QtWidgets import (
     QCheckBox,
     QProgressBar,
     QInputDialog,
-    QDockWidget
 )
 from qgis.PyQt.QtSql import *
 
@@ -61,15 +57,7 @@ FORM_CLASS, _ = uic.loadUiType(
 )
 
 
-def find_python():
-    if sys.platform != "win32":
-        return sys.executable
-
-    # For OSGeo4W
-    return str(Path(os.__file__).parents[1] / 'python.exe')
-
-
-class TotalopenstationDialog(QDockWidget, FORM_CLASS):
+class TotalopenstationDialog(QtWidgets.QDockWidget, FORM_CLASS):
     closingPlugin = pyqtSignal()
 
     def __init__(self, parent=None):
@@ -79,7 +67,7 @@ class TotalopenstationDialog(QDockWidget, FORM_CLASS):
         self.iface = iface
         self.canvas = iface.mapCanvas()
         self.groupBox_coordinate.setHidden(False)
-        self.model = QStandardItemModel(self)
+        self.model = QtGui.QStandardItemModel(self)
         self.tableView.setModel(self.model)
         self.toolButton_input.clicked.connect(self.setPathinput)
         self.toolButton_output.clicked.connect(self.setPathoutput)
@@ -90,7 +78,20 @@ class TotalopenstationDialog(QDockWidget, FORM_CLASS):
         self.pushButton_connect.setEnabled(False)
         self.pushButton_destination.clicked.connect(self.selection_point)
         self.pushButton_origin.clicked.connect(self.selection_origin)
-        self.python_exe = find_python()
+
+    def find_python(self):
+
+        if sys.platform != "win32":
+            return sys.executable
+
+        for path in sys.path:  # searching sys.path for python executables
+            assumed_path = os.path.join(path, "python.exe")
+            if os.path.isfile(assumed_path):
+                return assumed_path
+
+        raise Exception("Python executable not found")
+
+
 
     def closeEvent(self, event):
         self.closingPlugin.emit()
@@ -151,7 +152,7 @@ class TotalopenstationDialog(QDockWidget, FORM_CLASS):
         with open(fileName, "r") as fileInput:
             for row in csv.reader(fileInput):
 
-                items = [QStandardItem(field) for field in row]
+                items = [QtGui.QStandardItem(field) for field in row]
                 self.model.appendRow(items)
 
     def delete(self):
@@ -165,9 +166,9 @@ class TotalopenstationDialog(QDockWidget, FORM_CLASS):
                 self.model.removeRow(index.row())
 
     def check_port(self):
-
+        python_exe = self.find_python()
         p = subprocess.Popen(
-            self.python_exe + " -m serial.tools.list_ports",
+            python_exe + " -m serial.tools.list_ports",
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             shell=True,
@@ -203,7 +204,7 @@ class TotalopenstationDialog(QDockWidget, FORM_CLASS):
             pass
 
     def on_pushButton_export_pressed(self):
-
+        python_exe = self.find_python()
         self.delete()
         b = Path(QgsApplication.qgisSettingsDirPath())
         cmd = os.path.join(
@@ -217,7 +218,16 @@ class TotalopenstationDialog(QDockWidget, FORM_CLASS):
         )
 
         if platform.system() == "Windows":
-
+            b=Path(QgsApplication.qgisSettingsDirPath().replace('/','\\'))
+            cmd = os.path.join(
+                os.sep,
+                b,
+                "python",
+                "plugins",
+                "totalopenstationToQgis",
+                "scripts",
+                "totalopenstation-cli-parser.py",
+            )
             if self.comboBox_format2.currentIndex() == 6:
                 direct = os.path.dirname(
                     os.path.abspath(str(self.lineEdit_output.text()))
@@ -226,7 +236,7 @@ class TotalopenstationDialog(QDockWidget, FORM_CLASS):
                 shp_csv = direct + "/" + filename + ".csv"
                 p = subprocess.run(
                     [
-                        self.python_exe,
+                        python_exe,
                         cmd,
                         "-i",
                         str(self.lineEdit_input.text()),
@@ -238,7 +248,6 @@ class TotalopenstationDialog(QDockWidget, FORM_CLASS):
                         "csv",
                         "--overwrite",
                     ],
-                    check=True
                 )
 
                 uri = (
@@ -279,7 +288,7 @@ class TotalopenstationDialog(QDockWidget, FORM_CLASS):
                 try:  # os.system("start cmd /k" + ' python ' +cmd+' '+cmd2)
                     subprocess.run(
                         [
-                            self.python_exe,
+                            sys.executable,
                             cmd,
                             "-i",
                             str(self.lineEdit_input.text()),
@@ -291,7 +300,6 @@ class TotalopenstationDialog(QDockWidget, FORM_CLASS):
                             self.comboBox_format2.currentText(),
                             "--overwrite",
                         ],
-                        check=True
                     )
 
                     if self.comboBox_format2.currentIndex() == 0:
@@ -686,7 +694,7 @@ class TotalopenstationDialog(QDockWidget, FORM_CLASS):
         else:
             try:  # os.system("start cmd /k" + ' python ' +cmd+' '+cmd2)
                 p = subprocess.run([
-                        self.python_exe,
+                        sys.executable,
                         cmd,
                         "-i",
                         str(self.lineEdit_input.text()),
@@ -698,7 +706,6 @@ class TotalopenstationDialog(QDockWidget, FORM_CLASS):
                         self.comboBox_format2.currentText(),
                         "--overwrite",
                     ],
-                    check=True
                 )
 
                 if self.comboBox_format2.currentIndex() == 0:
@@ -1271,7 +1278,7 @@ class TotalopenstationDialog(QDockWidget, FORM_CLASS):
 
     def on_pushButton_connect_pressed(self):
         self.textEdit.clear()
-
+        python_exe=self.find_python()
         b = Path(QgsApplication.qgisSettingsDirPath())
         cmd = os.path.join(
             os.sep,
@@ -1286,7 +1293,7 @@ class TotalopenstationDialog(QDockWidget, FORM_CLASS):
         try:
             c = subprocess.run(
                 [
-                    self.python_exe,
+                    python_exe,
                     cmd,
                     "-m",
                     self.comboBox_model.currentText(),
@@ -1295,7 +1302,6 @@ class TotalopenstationDialog(QDockWidget, FORM_CLASS):
                     "-o",
                     str(self.lineEdit_save_raw.text()),
                 ],
-                check=True
             )
 
         except Exception as e:
