@@ -224,7 +224,7 @@ class TotalopenstationDialog(QtWidgets.QDockWidget, FORM_CLASS):
             "plugins",
             "totalopenstationToQgis",
             "scripts",
-            "totalopenstation-cli-connector.py",
+            "totalopenstation-cli-parser.py",
         )
         try:
 
