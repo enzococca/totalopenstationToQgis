@@ -169,7 +169,12 @@ if options.outformat:
                 exit_with_error(message)
 
 if options.infile:
-    infile = open(options.infile, 'r').read()
+    try:
+        infile = open(options.infile, 'rb').read()
+    except:
+        print('no binary')
+    else:
+        infile = open(options.infile, 'r', encoding='ISO-8859-1').read()
 else:
     if sys.stdin.isatty():
         sys.exit(_('No input data!'))
