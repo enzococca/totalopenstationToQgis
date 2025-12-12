@@ -21,6 +21,7 @@
  ***************************************************************************/
 """
 
+import math
 import os
 import sys
 from datetime import date
@@ -30,6 +31,8 @@ import platform
 import csv
 import tempfile
 import textwrap as tr
+import importlib
+import pkgutil
 from qgis.PyQt import *
 from qgis.PyQt.QtGui import *
 from qgis.PyQt.QtCore import *
@@ -51,6 +54,8 @@ from qgis.core import *
 from qgis.gui import *
 from qgis.utils import iface
 from pathlib import Path
+from totalopenstation import formats as tops_formats
+from totalopenstation import models as tops_models
 
 
 def find_python():
@@ -65,7 +70,8 @@ def find_python():
     raise Exception("Python executable not found")
 
 def path_parse():
-    if platform.system() == "win32":
+    is_windows = sys.platform == "win32" or platform.system().lower() == "windows"
+    if is_windows:
         path2parser = Path(
             QgsApplication.qgisSettingsDirPath().replace('/', '\\'))  # check path totalstation parser for
         # windows and replace slash to backslash. It not working if you don't replace
@@ -101,6 +107,7 @@ class TotalopenstationDialog(QtWidgets.QDockWidget, FORM_CLASS):
         self.pushButton_origin.clicked.connect(self.selection_origin)
         self.python_exe = find_python()
         self.path2parser = path_parse()
+        self.populate_model_combo()
 
 
 
@@ -118,12 +125,91 @@ class TotalopenstationDialog(QtWidgets.QDockWidget, FORM_CLASS):
             self.pushButton_connect.setEnabled(False)
 
     def tt(self):
-        if self.comboBox_model.currentIndex() != 6:
+        current_model = self.comboBox_model.currentText()
+        if current_model not in {"custom", "custom_bluetooth"}:
 
             self.mDockWidget.setHidden(True)
         else:
 
             self.mDockWidget.show()
+
+    def available_models(self):
+        package_path = Path(tops_models.__file__).parent
+        return sorted(
+            module.name
+            for module in pkgutil.iter_modules([str(package_path)])
+            if not module.name.startswith("_")
+        )
+
+    def populate_model_combo(self):
+        detected_models = self.available_models()
+
+        if not detected_models:
+            self.textEdit.appendPlainText(
+                "No total station models detected in totalopenstation.models"
+            )
+            return
+
+        previous_model = self.comboBox_model.currentText()
+        self.comboBox_model.clear()
+        self.comboBox_model.addItems(detected_models)
+
+        if previous_model in detected_models:
+            self.comboBox_model.setCurrentText(previous_model)
+
+    def detect_input_format(self, input_path: str):
+        """Heuristically detect the correct parser for a raw file.
+
+        The detector instantiates every built-in parser and chooses the one
+        that yields the highest number of parsed points. Exceptions from
+        parsers are ignored so a single parser failure does not block
+        detection.
+        """
+
+        try:
+            raw_data = Path(input_path).read_text(encoding="ISO-8859-1")
+        except Exception as exc:  # noqa: BLE001 - keep generic to log in UI
+            self.textEdit.appendPlainText(
+                f"Impossibile leggere il file per il rilevamento automatico: {exc}"
+            )
+            return None
+
+        candidates = []
+        for key, parser_data in tops_formats.BUILTIN_INPUT_FORMATS.items():
+            module_name, class_name, _ = parser_data
+            try:
+                module = importlib.import_module(
+                    f"totalopenstation.formats.{module_name}"
+                )
+                parser_cls = getattr(module, class_name)
+                parser = parser_cls(raw_data)
+                points = parser.points
+            except Exception:
+                continue
+
+            if points:
+                candidates.append((len(points), key))
+
+        if not candidates:
+            self.textEdit.appendPlainText(
+                "Nessun formato riconosciuto automaticamente: seleziona manualmente"
+            )
+            return None
+
+        candidates.sort(reverse=True)
+        best_match = candidates[0][1]
+        return best_match
+
+    def apply_detected_format(self, detected_format):
+        if not detected_format:
+            return
+
+        index = self.comboBox_format.findText(detected_format)
+        if index != -1:
+            self.comboBox_format.setCurrentIndex(index)
+            self.textEdit.appendPlainText(
+                f"Formato rilevato automaticamente: {detected_format}"
+            )
 
     def setPathinput(self):
         s = QgsSettings()
@@ -133,6 +219,8 @@ class TotalopenstationDialog(QtWidgets.QDockWidget, FORM_CLASS):
 
             self.lineEdit_input.setText(input_)
             s.setValue("", input_)
+            detected_format = self.detect_input_format(input_)
+            self.apply_detected_format(detected_format)
 
     def setPathoutput(self):
         s = QgsSettings()
@@ -178,33 +266,36 @@ class TotalopenstationDialog(QtWidgets.QDockWidget, FORM_CLASS):
 
     def check_port(self):
 
-        p = subprocess.Popen(
-            self.python_exe + " -m serial.tools.list_ports",
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            shell=True,
+        p = subprocess.run(
+            [self.python_exe, "-m", "serial.tools.list_ports"],
+            capture_output=True,
+            text=True,
+            check=False,
         )
 
-        output, error = p.communicate(str.encode("utf-8"))
-        output = output.decode("utf-8").splitlines()
-        # error= error.decode('utf-8').splitlines()
-        return output
+        if p.stderr:
+            self.textEdit.appendPlainText(
+                "Unable to list serial ports: {}".format(p.stderr.strip())
+            )
+
+        return [line for line in p.stdout.splitlines() if line.strip()]
 
     def listtostr(self):
 
-        str1 = ""
-
-        # traverse in the string
-        for ele in self.check_port():
-            str1 += ele
-        return str1
+        return "\n".join(self.check_port())
 
     def on_pushButton_check_port_pressed(self):
         self.textEdit.appendPlainText("Wait a moment....")
-        lines = tr.wrap(str(self.listtostr()), width=10)
-        # self.textEdit.clear()
-        self.textEdit.appendPlainText("Ports found:\n" + str(lines))
-        self.comboBox_port.addItems(lines)
+        ports = self.check_port()
+        if not ports:
+            self.textEdit.appendPlainText("No serial ports found.")
+            self.comboBox_port.clear()
+            return
+
+        pretty_ports = "\n".join(ports)
+        self.textEdit.appendPlainText("Ports found:\n" + pretty_ports)
+        self.comboBox_port.clear()
+        self.comboBox_port.addItems(ports)
 
     def convert_csv(self):
         try:
@@ -698,6 +789,10 @@ class TotalopenstationDialog(QtWidgets.QDockWidget, FORM_CLASS):
             # QMessageBox.information(self, 'TotalopeStation', 'Select the Point where you want translate from the first job in tha map canvas')
 
             selection = b.selectedFeatures()
+            if not selection:
+                raise ValueError(
+                    "Seleziona almeno un punto in 'TOPS-first_job' prima di procedere"
+                )
 
             # estraggo le coordinate x y
             pt = QgsPointXY(selection[0]["x"], selection[0]["y"])
@@ -713,6 +808,13 @@ class TotalopenstationDialog(QtWidgets.QDockWidget, FORM_CLASS):
     def selection_origin(self):
         b = QgsProject.instance().mapLayersByName("TOPS-first_job")[0]
         selection_or = b.selectedFeatures()
+        if not selection_or:
+            QMessageBox.information(
+                self,
+                "TotalopenStation",
+                "Seleziona almeno un punto in 'TOPS-first_job' prima di impostare l'origine",
+            )
+            return
         pt2 = QgsPointXY(selection_or[0]["x"], selection_or[0]["y"])
         print(pt2)
         self.lineEdit_x_origin.setText(str(pt2[0]))
@@ -756,107 +858,117 @@ class TotalopenstationDialog(QtWidgets.QDockWidget, FORM_CLASS):
         crs = QgsCoordinateReferenceSystem().fromProj4(
             "+proj=tmerc +ellps=WGS84 +datum=WGS84 +units=m +no_defs +lon_0=0 +x_0=0 +y_0=0 +k_0=0.996"
         )
+        second_job_layers = QgsProject.instance().mapLayersByName("TOPS-second_job")
+        first_job_layers = QgsProject.instance().mapLayersByName("TOPS-first_job")
 
-        a = QgsProject.instance().mapLayersByName("TOPS-second_job")[0]
-        a.setCrs(crs)
-        # layer su cui scegliere il punto per traslare
-        b = QgsProject.instance().mapLayersByName("TOPS-first_job")[0]
-        b.setCrs(crs)
-        # avvio editing
-
-        a.startEditing()
-        ptx = self.lineEdit_x_destination.text()
-
-        pty = self.lineEdit_y_destination.text()
-
-        pt2x = self.lineEdit_x_origin.text()
-
-        pt2y = self.lineEdit_y_origin.text()
-        # seleziono il punto dalla poligonale su cui devo traslare
-        # QMessageBox.information(self, 'TotalopeStation', 'Select the Point where you want translate from the first job in tha map canvas')
-        try:
-
-            # preparo il context
-            context = QgsExpressionContext()
-            scope = QgsExpressionContextScope()
-            context.appendScope(scope)
-
-            # espressione per traslare sul punto selezionato della poligonale
-            e1 = QgsExpression("translate($geometry,{},{})".format(ptx, pty))
-
-            # devi selezionare  il punto d'origine della poligonale
-            # QMessageBox.information(self, 'TotalopeStation','Select origin Point of first job, inthe map canvas')
-
-            # espressione per calcolare l'azimut in gradi sulla linea al punto di origine
-            e2 = QgsExpression(
-                "degrees(azimuth(make_point({},{}), make_point({},{})))".format(
-                    ptx, pty, pt2x, pt2y
-                )
-            )
-
-            print(e2)
-
-            r = e2.evaluate(context)
-            print(r)
-
-            # espressione per ruotare
-            e3 = QgsExpression(
-                "rotate( $geometry, {}, make_point({},{}))".format(r, ptx, pty)
-            )
-            print(e3)
-
-            # espressione per aggiornare i campi x y del vettore ruotato
-            e4 = QgsExpression("$x")
-            e5 = QgsExpression("$y")
-
-            print(e4)
-
-            # ciclo for per aggiornare le geometrie con l'espressione di traslazione
-            for f in a.getFeatures():
-                QCoreApplication.processEvents()
-                scope.setFeature(f)
-                d = e1.evaluate(context)
-                print(d)
-                f.setGeometry(d)
-                a.updateFeature(f)
-
-            # ciclo for per aggiornare le geometrie con l'espressione di rotazione
-            for s in a.getFeatures():
-                QCoreApplication.processEvents()
-                scope.setFeature(s)
-                d = e3.evaluate(context)
-                print(d)
-                s.setGeometry(d)
-                a.updateFeature(s)
-
-                # aggiorno i campi x y della tabella ruotata
-            for g in a.getFeatures():
-                QCoreApplication.processEvents()
-                scope.setFeature(g)
-                d1 = g["x"] = e4.evaluate(context)
-                d2 = g["y"] = e5.evaluate(context)
-                print(d1, d2)
-                # s.setGeometry(d)
-                a.updateFeature(g)
-
-            self.canvas.refresh()
-            value = QMessageBox.information(
+        if not second_job_layers:
+            QMessageBox.warning(
                 self,
                 "TotalOpenStation",
-                "rototranslation completed, click ok to commit change else cancel "
-                "to rollback",
-                QMessageBox.Ok | QMessageBox.Cancel,
-            )  # salvo e chiudo
-            if value == QMessageBox.Ok:
-                a.commitChanges()
-            elif value == QMessageBox.Cancel:
-                # a.actionRollbackEdits().trigger()
-                iface.actionRollbackEdits().trigger()
-                a.commitChanges()
-                self.canvas.refresh()
+                "Nessun layer 'TOPS-second_job' trovato da rototraslare",
+                QMessageBox.Ok,
+            )
+            return
+        if not first_job_layers:
+            QMessageBox.warning(
+                self,
+                "TotalOpenStation",
+                "Nessun layer di riferimento 'TOPS-first_job' trovato",
+                QMessageBox.Ok,
+            )
+            return
 
-        except:
-            pass
+        a = second_job_layers[0]
+        b = first_job_layers[0]
+        a.setCrs(crs)
+        b.setCrs(crs)
+
+        try:
+            dest_x = float(self.lineEdit_x_destination.text())
+            dest_y = float(self.lineEdit_y_destination.text())
+            origin_x = float(self.lineEdit_x_origin.text())
+            origin_y = float(self.lineEdit_y_origin.text())
+        except ValueError:
+            QMessageBox.warning(
+                self,
+                "TotalOpenStation",
+                "Inserisci coordinate numeriche valide prima di eseguire la rototraslazione",
+                QMessageBox.Ok,
+            )
+            return
+
+        dx = dest_x - origin_x
+        dy = dest_y - origin_y
+        rotation_angle = math.degrees(math.atan2(dy, dx))
+
+        # preparo il context
+        context = QgsExpressionContext()
+        scope = QgsExpressionContextScope()
+        context.appendScope(scope)
+
+        translate_expr = QgsExpression(f"translate($geometry,{dx},{dy})")
+        rotate_expr = QgsExpression(
+            f"rotate($geometry,{rotation_angle},make_point({dest_x},{dest_y}))"
+        )
+        x_expr = QgsExpression("$x")
+        y_expr = QgsExpression("$y")
+
+        if not a.isEditable():
+            a.startEditing()
+
+        a.beginEditCommand("Rototraslazione su punti noti")
+        try:
+            for feature in a.getFeatures():
+                QCoreApplication.processEvents()
+                scope.setFeature(feature)
+                translated_geom = translate_expr.evaluate(context)
+                if isinstance(translated_geom, QgsGeometry):
+                    feature.setGeometry(translated_geom)
+                    a.updateFeature(feature)
+
+            for feature in a.getFeatures():
+                QCoreApplication.processEvents()
+                scope.setFeature(feature)
+                rotated_geom = rotate_expr.evaluate(context)
+                if isinstance(rotated_geom, QgsGeometry):
+                    feature.setGeometry(rotated_geom)
+                    a.updateFeature(feature)
+
+            x_index = a.fields().indexOf("x")
+            y_index = a.fields().indexOf("y")
+            for feature in a.getFeatures():
+                QCoreApplication.processEvents()
+                scope.setFeature(feature)
+                if x_index != -1:
+                    feature.setAttribute(x_index, x_expr.evaluate(context))
+                if y_index != -1:
+                    feature.setAttribute(y_index, y_expr.evaluate(context))
+                a.updateFeature(feature)
+        except Exception as exc:
+            a.destroyEditCommand()
+            QMessageBox.warning(
+                self,
+                "TotalOpenStation",
+                f"Errore durante la rototraslazione:\n{exc}",
+                QMessageBox.Ok,
+            )
+            a.rollBack()
+            return
+        else:
+            a.endEditCommand()
+
+        self.canvas.refresh()
+        value = QMessageBox.information(
+            self,
+            "TotalOpenStation",
+            "Rototraslazione completata, clicca OK per salvare o Cancel per annullare",
+            QMessageBox.Ok | QMessageBox.Cancel,
+        )
+        if value == QMessageBox.Ok:
+            a.commitChanges()
+        else:
+            a.rollBack()
+            self.canvas.refresh()
 
     def launch_commit(self, msg):
         if msg == QMessageBox.Ok:
